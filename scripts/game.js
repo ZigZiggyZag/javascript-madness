@@ -33,15 +33,20 @@ function getRandomSign()
     return Math.random() < 0.5 ? -1 : 1;
 }
 
+function drawCircle(x, y, radius, color)
+{
+    context.beginPath();
+    context.arc(x, y, radius, 0, Math.PI*2);
+    context.fillStyle = color;
+    context.fill();
+    context.closePath();
+}
+
 function draw()
 {
     context.clearRect(0, 0, canvas.width, canvas.height);
 
-    context.beginPath();
-    context.arc(x, y, 10, 0, Math.PI*2);
-    context.fillStyle = "#FF0000";
-    context.fill();
-    context.closePath();
+    drawCircle(x, y, 10, "#FF0000")
 
     if (up) { y -= 2 };
     if (dw) { y += 2 };

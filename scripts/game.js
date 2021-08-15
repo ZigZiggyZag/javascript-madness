@@ -9,8 +9,12 @@ var dw = false;
 var lf = false;
 var rt = false;
 
+var mouseX = 0;
+var mouseY = 0;
+
 document.addEventListener("keydown", handleKeyDown);
 document.addEventListener("keyup", handleKeyUp);
+document.addEventListener("mousemove", getMouseXY);
 
 function handleKeyDown(e)
 {
@@ -26,6 +30,12 @@ function handleKeyUp(e)
     if(e.key == "s") { dw = false };
     if(e.key == "a") { lf = false };
     if(e.key == "d") { rt = false };
+}
+
+function getMouseXY(e)
+{
+    mouseX = e.offsetX;
+    mouseY = e.offsetY;
 }
 
 function getRandomSign()
@@ -46,12 +56,15 @@ function draw()
 {
     context.clearRect(0, 0, canvas.width, canvas.height);
 
+    x = mouseX;
+    y = mouseY;
+
     drawCircle(x, y, 10, "#FF0000")
 
-    if (up) { y -= 2 };
-    if (dw) { y += 2 };
-    if (lf) { x -= 2 };
-    if (rt) { x += 2 };
+    //if (up) { y -= 2 };
+    //if (dw) { y += 2 };
+    //if (lf) { x -= 2 };
+    //if (rt) { x += 2 };
 }
 
 setInterval(draw, 10);

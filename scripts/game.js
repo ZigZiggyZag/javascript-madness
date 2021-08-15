@@ -4,13 +4,34 @@ var context = canvas.getContext("2d");
 var x = canvas.width/2;
 var y = canvas.height/2;
 
+var up = false;
+var dw = false;
+var lf = false;
+var rt = false;
+
+document.addEventListener("keydown", handleKeyDown);
+document.addEventListener("keyup", handleKeyUp);
+
+function handleKeyDown(e)
+{
+    if(e.key == "w") { up = true };
+    if(e.key == "s") { dw = true };
+    if(e.key == "a") { lf = true };
+    if(e.key == "d") { rt = true };
+}
+
+function handleKeyUp(e)
+{
+    if(e.key == "w") { up = false };
+    if(e.key == "s") { dw = false };
+    if(e.key == "a") { lf = false };
+    if(e.key == "d") { rt = false };
+}
+
 function getRandomSign()
 {
     return Math.random() < 0.5 ? -1 : 1;
 }
-
-var dx = 2 * getRandomSign();
-var dy = 2 * getRandomSign();
 
 function draw()
 {
@@ -22,11 +43,10 @@ function draw()
     context.fill();
     context.closePath();
 
-    dx = (x <= 5 || x >= canvas.width - 5) ? -dx : dx;
-    dy = (y <= 5 || y >= canvas.height - 5) ? -dy: dy;
-
-    x += dx;
-    y += dy;
+    if (up) { y -= 2 };
+    if (dw) { y += 2 };
+    if (lf) { x -= 2 };
+    if (rt) { x += 2 };
 }
 
 setInterval(draw, 10);

@@ -11,6 +11,7 @@ var rt = false;
 
 var mouseX = 0;
 var mouseY = 0;
+var inCanvas = true;
 
 document.addEventListener("keydown", handleKeyDown);
 document.addEventListener("keyup", handleKeyUp);
@@ -34,8 +35,11 @@ function handleKeyUp(e)
 
 function getMouseXY(e)
 {
-    mouseX = e.offsetX;
-    mouseY = e.offsetY;
+    var rect = canvas.getBoundingClientRect();
+    mouseX = e.clientX - rect.left;
+    mouseY = e.clientY - rect.top;
+    inCanvas = (e.clientX > rect.left && e.clientX < rect.right) && 
+                (e.clientY > rect.top && e.clientY < rect.bottom)
 }
 
 function getRandomSign()
@@ -52,14 +56,26 @@ function drawCircle(x, y, radius, color)
     context.closePath();
 }
 
-function draw()
+var smileyFace = new Image();
+smileyFace.src = 'assets/SmileyFace.png';
+smileyFace.alt = 'smiley face';
+
+function draw(e)
 {
     context.clearRect(0, 0, canvas.width, canvas.height);
 
-    x = mouseX;
-    y = mouseY;
+    if(inCanvas)
+    {
+        x = mouseX - (smileyFace.width / 2);
+        y = mouseY - (smileyFace.height / 2);
+    }
 
-    drawCircle(x, y, 10, "#FF0000")
+    context.drawImage(smileyFace, x, y);
+
+    context.fillText('X: ' + mouseX, 5, 10);
+    context.fillText('Y: ' + mouseY, 5, 20);
+
+    //drawCircle(x, y, 10, "#FF0000")
 
     //if (up) { y -= 2 };
     //if (dw) { y += 2 };

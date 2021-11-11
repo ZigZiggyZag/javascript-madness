@@ -1,4 +1,5 @@
 import {mouseX, mouseY, inCanvas, up, dw, lf, rt} from './input.js';
+import { smileyFace } from './assets.js';
 
 var canvas = document.getElementById("gameCanvas");
 var context = canvas.getContext("2d");
@@ -22,10 +23,6 @@ function drawCircle(x, y, radius, color)
     context.fill();
     context.closePath();
 }
-
-var smileyFace = new Image();
-smileyFace.src = 'assets/SmileyFace.png';
-smileyFace.alt = 'smiley face';
 
 function draw(e)
 {

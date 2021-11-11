@@ -1,46 +1,13 @@
+import {mouseX, mouseY, inCanvas, up, dw, lf, rt} from './input.js';
+
 var canvas = document.getElementById("gameCanvas");
 var context = canvas.getContext("2d");
 
 var x = canvas.width/2;
 var y = canvas.height/2;
 
-var up = false;
-var dw = false;
-var lf = false;
-var rt = false;
-
-var mouseX = 0;
-var mouseY = 0;
-var inCanvas = true;
-
-document.addEventListener("keydown", handleKeyDown);
-document.addEventListener("keyup", handleKeyUp);
-document.addEventListener("mousemove", getMouseXY);
-
-function handleKeyDown(e)
-{
-    if(e.key == "w") { up = true };
-    if(e.key == "s") { dw = true };
-    if(e.key == "a") { lf = true };
-    if(e.key == "d") { rt = true };
-}
-
-function handleKeyUp(e)
-{
-    if(e.key == "w") { up = false };
-    if(e.key == "s") { dw = false };
-    if(e.key == "a") { lf = false };
-    if(e.key == "d") { rt = false };
-}
-
-function getMouseXY(e)
-{
-    var rect = canvas.getBoundingClientRect();
-    mouseX = e.clientX - rect.left;
-    mouseY = e.clientY - rect.top;
-    inCanvas = (e.clientX > rect.left && e.clientX < rect.right) && 
-                (e.clientY > rect.top && e.clientY < rect.bottom)
-}
+var cX = canvas.width/2;
+var cY = canvas.height/2;
 
 function getRandomSign()
 {
@@ -75,12 +42,12 @@ function draw(e)
     context.fillText('X: ' + mouseX, 5, 10);
     context.fillText('Y: ' + mouseY, 5, 20);
 
-    //drawCircle(x, y, 10, "#FF0000")
+    drawCircle(cX, cY, 10, "#FF0000")
 
-    //if (up) { y -= 2 };
-    //if (dw) { y += 2 };
-    //if (lf) { x -= 2 };
-    //if (rt) { x += 2 };
+    if (up) { cY -= 2 };
+    if (dw) { cY += 2 };
+    if (lf) { cX -= 2 };
+    if (rt) { cX += 2 };
 }
 
 setInterval(draw, 10);

@@ -7,11 +7,14 @@ var rt = false;
 
 var mouseX = 0;
 var mouseY = 0;
+var mouseClick = false;
 var inCanvas = true;
 
 document.addEventListener("keydown", handleKeyDown);
 document.addEventListener("keyup", handleKeyUp);
 document.addEventListener("mousemove", getMouseXY);
+document.addEventListener("mousedown", setMouseDown);
+document.addEventListener("mouseup", setMouseUp);
 
 function handleKeyDown(e)
 {
@@ -38,4 +41,14 @@ function getMouseXY(e)
                 (e.clientY > rect.top && e.clientY < rect.bottom)
 }
 
-export {mouseX, mouseY, inCanvas, up, dw, lf, rt};
+function setMouseDown(e)
+{
+    mouseClick = true;
+}
+
+function setMouseUp(e)
+{
+    mouseClick = false;
+}
+
+export {mouseX, mouseY, mouseClick, inCanvas, up, dw, lf, rt};

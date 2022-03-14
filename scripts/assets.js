@@ -10,4 +10,12 @@ var area1 = new Image();
 area1.src = 'assets/home.png';
 area1.alt = 'area1';
 
-export {smileyFace, player, area1};
+var cursor = new Image();
+cursor.src = 'assets/cursor.png';
+cursor.alt = 'cursor';
+
+var cursorPressed = new Image();
+cursorPressed.src = 'assets/cursorPressed.png';
+cursorPressed.alt = 'cursorPressed';
+
+export {smileyFace, player, area1, cursor, cursorPressed};

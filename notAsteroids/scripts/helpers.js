@@ -33,7 +33,7 @@ function clamp(value, min, max) {
 
 /**
  * @param {number} degrees - Degrees
- * @returns {number} - Radians 
+ * @returns {number} Radians 
  */
 function convertToRadians(degrees) {
     return degrees * Math.PI/180;
@@ -41,14 +41,23 @@ function convertToRadians(degrees) {
 
 /**
  * @param {Vector} vector - A vector object (defined in helpers.js)
- * @returns {Array} [x, y]
+ * @returns {number[]} [x, y]
  */
-function convertToCartesian(vector) {
+function vectorToCartesian(vector) {
     return [vector.magnitude * Math.cos(vector.angle), vector.magnitude * Math.sin(vector.angle)];
 }
 
 /**
- * @param {Array} coordinates - Cartesian coordinates
+ * @param {number} magnitude - The magnitude of the vector
+ * @param {number} angle - The angle of the vector
+ * @returns {number[]} [x, y]
+ */
+ function convertToCartesian(magnitude, angle) {
+    return [magnitude * Math.cos(angle), magnitude * Math.sin(angle)];
+}
+
+/**
+ * @param {number[]} coordinates - Cartesian coordinates
  * @returns {Vector} Polar Coordinates
  */
 function convertToPolar(coordinates) {
@@ -58,15 +67,15 @@ function convertToPolar(coordinates) {
 /**
  * @param {Vector} vector1 - The first vector to add
  * @param {Vector} vector2 - The second vector to add
- * @returns {Vector} - The sum of vector1 and vector 2
+ * @returns {Vector} The sum of vector1 and vector 2
  */
 function addVelocities(vector1, vector2) {
-    var vector1Cartesian = convertToCartesian(vector1);
-    var vector2Cartesian = convertToCartesian(vector2);
+    var vector1Cartesian = vectorToCartesian(vector1);
+    var vector2Cartesian = vectorToCartesian(vector2);
 
     var vectorSum = [vector1Cartesian[0] + vector2Cartesian[0], vector1Cartesian[1] + vector2Cartesian[1]];
 
     return convertToPolar(vectorSum);
 }
 
-export {clamp, convertToRadians, convertToCartesian, convertToPolar, addVelocities, Vector};
+export {clamp, convertToRadians, vectorToCartesian, convertToCartesian, convertToPolar, addVelocities, Vector};

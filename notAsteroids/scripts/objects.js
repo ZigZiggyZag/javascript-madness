@@ -1,6 +1,6 @@
 /** @type {HTMLCanvasElement} */
 import {mouseX, mouseY, mouseClick, inCanvas, up, dw, lf, rt} from './input.js';
-import { clamp, convertToRadians, convertToCartesian, convertToPolar, addVelocities, Vector } from "./helpers.js";
+import { clamp, convertToRadians, vectorToCartesian, convertToCartesian, convertToPolar, addVelocities, Vector } from "./helpers.js";
 
 var canvas = document.getElementById("gameCanvas");
 var ctx = canvas.getContext('2d');
@@ -46,7 +46,7 @@ class Ship {
             this.velocity.setMagnitude = this.velocity.getMagnitude() * this.friction/1;
         }
 
-        var cartesianVelocity = convertToCartesian(this.velocity);
+        var cartesianVelocity = vectorToCartesian(this.velocity);
 
         this.x += cartesianVelocity[0]
         this.y += cartesianVelocity[1]
@@ -68,6 +68,16 @@ class Ship {
             this.y + this.size * Math.sin(this.angle + convertToRadians(-130))
         );
         ctx.closePath();
+        ctx.stroke();
+        
+        ctx.strokeStyle = 'red';
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y);
+        var velocityCartesian = convertToCartesian(this.velocity.getMagnitude() * 10, this.velocity.getAngle());
+        ctx.lineTo(
+            this.x + velocityCartesian[0],
+            this.y + velocityCartesian[1]
+        )
         ctx.stroke();
     }
 }

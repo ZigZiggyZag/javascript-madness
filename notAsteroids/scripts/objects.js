@@ -1,6 +1,6 @@
 /** @type {HTMLCanvasElement} */
 import {mouseX, mouseY, mouseClick, inCanvas, up, dw, lf, rt} from './input.js';
-import { clamp, convertToRadians, convertToCartesian, addVelocities } from "./helpers.js";
+import { clamp, convertToRadians, convertToCartesian, convertToPolar, addVelocities, Vector } from "./helpers.js";
 
 var canvas = document.getElementById("gameCanvas");
 var ctx = canvas.getContext('2d');
@@ -13,7 +13,7 @@ class Ship {
         this.angle = convertToRadians(angle);
         this.size = size
         this.acceleration = 0.1;
-        this.velocity = [0, 0];
+        this.velocity = new Vector(0, this.angle);
         this.maxVelocity = 5;
         this.friction = 1;
     }
@@ -35,18 +35,21 @@ class Ship {
             var upDown = (dw ? 1 : 0) - (up ? 1 : 0);
             var leftRight = (rt ? 1 : 0) - (lf ? 1 : 0);
             var direction = Math.atan2(upDown, leftRight);
-            
-            var result = addVelocities(this.velocity, [this.acceleration, direction]);
+            var accelerationVector = new Vector(this.acceleration, direction);
 
-            this.velocity[0] = [Math.min(result[0], this.maxVelocity), result[1]];
+            var result = addVelocities(this.velocity, accelerationVector);
+            result.setMagnitude(clamp(result.getMagnitude(), 0, this.maxVelocity))
+
+            this.velocity = result;
         }
         else {
-            this.velocity[0] *= this.friction/1;
-            this.velocity[1] *= this.friction/1;
+            this.velocity.setMagnitude = this.velocity.getMagnitude() * this.friction/1;
         }
 
-        this.x += this.velocity[0]
-        this.y += this.velocity[1]
+        var cartesianVelocity = convertToCartesian(this.velocity);
+
+        this.x += cartesianVelocity[0]
+        this.y += cartesianVelocity[1]
     }
 
     draw() {

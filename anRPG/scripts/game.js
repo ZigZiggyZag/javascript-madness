@@ -1,6 +1,21 @@
 import {mouseX, mouseY, mouseClick, inCanvas, up, dw, lf, rt} from './input.js';
+import { smileyFace, player, area1, cursor, cursorPressed } from './assets.js';
 
-function traversableRoom(roomId){
+var canvas = document.getElementById("gameCanvas");
+var collisionCanvas = document.createElement('canvas');
+var context = canvas.getContext("2d");
+var collisionContext = canvas.getContext("2d");
+
+var cX = 640 - canvas.width/2;
+var cY = 640 - canvas.height/2;
+
+var walkDistance = 0;
+var walkFrame = 0;
+
+function draw(e)
+{
+    context.clearRect(0, 0, canvas.width, canvas.height);
+
     context.drawImage(area1, 0 + cX, 0 + cY, canvas.width + cX, canvas.height + cY, 0, 0, canvas.width + cX, canvas.height + cY);
 
     // Basic walking animation
@@ -34,18 +49,23 @@ function traversableRoom(roomId){
     if (dw && (cY < 1280 - canvas.height)) { cY += 2 }
     if (lf && (cX > 0)) { cX -= 2 }
     if (rt && (cX < 1280 - canvas.width)) { cX += 2 }
-}
-
-function staticRoom(roomId){
-
-}
-
-export function room(type, roomId)
-{
-    if (type == 0){
-        traversableRoom(roomId);
+    
+    if (mouseClick)
+    {
+        context.drawImage(cursorPressed, mouseX, mouseY);
     }
-    else{
-        staticRoom(roomId);
+    else
+    {
+        context.drawImage(cursor, mouseX, mouseY);
+    }
+
+    context.fillText('X: ' + cX, 5, 10);
+    context.fillText('Y: ' + cY, 5, 20);
+
+    if ((cX > 300 && cX < 500) && (cY < 20))
+    {
+        context.fillText('Press [E] to battle!', 5, 30);
     }
 }
+
+setInterval(draw, 10);

@@ -13,8 +13,11 @@ class Ship {
         this.angle = convertToRadians(angle);
         this.size = size
         this.acceleration = 0.1;
+        this.angularAcceleration = 0.3;
         this.velocity = new Vector(0, this.angle);
-        this.maxVelocity = 5;
+        this.angularVelocity = 0;
+        this.maxVelocity = 6;
+        this.maxAngularVelocity = 3;
         this.friction = 1;
     }
 
@@ -30,12 +33,28 @@ class Ship {
         return this.velocity;
     }
 
+    wrap() {
+        if (this.x < 0 - this.size) {this.x = canvas.width + this.size}
+        else if (this.x > canvas.width + this.size) {this.x = 0 - this.size}
+
+        if (this.y < 0 - this.size) {this.y = canvas.height + this.size}
+        else if (this.y > canvas.height + this.size) {this.y = 0 - this.size}
+    }
+
     update() {
-        if (up || dw || lf || rt) {
-            var upDown = (dw ? 1 : 0) - (up ? 1 : 0);
+        if (lf || rt) {
             var leftRight = (rt ? 1 : 0) - (lf ? 1 : 0);
-            var direction = Math.atan2(upDown, leftRight);
-            var accelerationVector = new Vector(this.acceleration, direction);
+            this.angularVelocity += leftRight * this.angularAcceleration;
+            this.angularVelocity = clamp(this.angularVelocity, -this.maxAngularVelocity, this.maxAngularVelocity);
+        }
+        else {
+            this.angularVelocity = this.angularVelocity * 1/1.2;
+        }
+
+        this.angle += convertToRadians(this.angularVelocity);
+
+        if (up) {
+            var accelerationVector = new Vector(this.acceleration, this.angle);
 
             var result = addVelocities(this.velocity, accelerationVector);
             result.setMagnitude(clamp(result.getMagnitude(), 0, this.maxVelocity))
@@ -43,13 +62,15 @@ class Ship {
             this.velocity = result;
         }
         else {
-            this.velocity.setMagnitude = this.velocity.getMagnitude() * this.friction/1;
+            this.velocity.setMagnitude = this.velocity.getMagnitude() * 1/this.friction;
         }
 
         var cartesianVelocity = vectorToCartesian(this.velocity);
 
         this.x += cartesianVelocity[0]
         this.y += cartesianVelocity[1]
+
+        this.wrap();
     }
 
     draw() {

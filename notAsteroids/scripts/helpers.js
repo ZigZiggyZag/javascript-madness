@@ -1,4 +1,8 @@
 class Vector {
+    /**
+     * @param {number} magnitude - Magnitude of the vector
+     * @param {number} angle - Angle in radians
+     */
     constructor(magnitude, angle) {
         this.magnitude = magnitude;
         this.angle = angle;

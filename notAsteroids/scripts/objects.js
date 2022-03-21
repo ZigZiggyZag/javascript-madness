@@ -1,6 +1,6 @@
 /** @type {HTMLCanvasElement} */
 import {mouseX, mouseY, mouseClick, inCanvas, up, dw, lf, rt} from './input.js';
-import { convertToRadians, clamp } from "./helpers.js";
+import { clamp, convertToRadians, convertToCartesian, addVelocities } from "./helpers.js";
 
 var canvas = document.getElementById("gameCanvas");
 var ctx = canvas.getContext('2d');
@@ -34,17 +34,11 @@ class Ship {
         if (up || dw || lf || rt) {
             var upDown = (dw ? 1 : 0) - (up ? 1 : 0);
             var leftRight = (rt ? 1 : 0) - (lf ? 1 : 0);
-
             var direction = Math.atan2(upDown, leftRight);
+            
+            var result = addVelocities(this.velocity, [this.acceleration, direction]);
 
-            this.velocity[0] += (this.acceleration * Math.cos(direction));
-            if (lf || rt) {
-                this.velocity[0] = clamp(this.velocity[0], -(Math.abs(this.maxVelocity * Math.cos(direction))), Math.abs(this.maxVelocity * Math.cos(direction)));
-            }
-            this.velocity[1] += (this.acceleration * Math.sin(direction));
-            if (up || dw) {
-                this.velocity[1] = clamp(this.velocity[1], -(Math.abs(this.maxVelocity * Math.sin(direction))), Math.abs(this.maxVelocity * Math.sin(direction)));
-            }
+            this.velocity[0] = [Math.min(result[0], this.maxVelocity), result[1]];
         }
         else {
             this.velocity[0] *= this.friction/1;

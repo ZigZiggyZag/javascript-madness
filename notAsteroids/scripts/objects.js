@@ -1,5 +1,6 @@
 /** @type {HTMLCanvasElement} */
 import { ENABLE_CONSOLE_LOGGING, SHOW_BOUNDING_BOXES, SHOW_VELOCITY_VECTORS } from './flags.js';
+import { laserFireSound, explosionSound, engineSound } from './assets.js'
 import { mouseX, mouseY, mouseClick, inCanvas, up, dw, lf, rt, fire1 } from './input.js';
 import { printToConsole, generateId, clamp, distanceBetweenPoints, convertToRadians, vectorToCartesian, convertToCartesian, convertToPolar, addVelocities, Vector } from "./helpers.js";
 
@@ -161,6 +162,9 @@ class Ship extends Object {
         if (fire1 && !this.fired && this.numLasers < this.maxLasers) {
             var offset = convertToCartesian(10, this.angle);
             new Laser(this.x + offset[0], this.y + offset[1], this.angle, 5, 'red', this.id);
+            laserFireSound.pause();
+            laserFireSound.currentTime = 0;
+            laserFireSound.play();
             this.fired = true;
             this.numLasers++;
         }
@@ -186,9 +190,12 @@ class Ship extends Object {
             result.setMagnitude(clamp(result.getMagnitude(), 0, this.maxVelocity))
 
             this.velocity = result;
+
+            engineSound.play();
         }
         else {
             this.velocity.setMagnitude = this.velocity.getMagnitude() * 1/this.friction;
+            engineSound.pause();
         }
 
         var cartesianVelocity = vectorToCartesian(this.velocity);
@@ -270,9 +277,12 @@ class Asteroid extends Object {
     }
 
     destroy() {
+        explosionSound.pause();
+        explosionSound.currentTime = 0;
+        explosionSound.play();
         if (this.asteroidIteration > 1) {
-            new Asteroid(this.x, this.y, this.size/1.4, this.speed * 1.5, this.asteroidIteration - 1);
-            new Asteroid(this.x, this.y, this.size/1.4, this.speed * 1.5, this.asteroidIteration - 1);
+            new Asteroid(this.x, this.y, this.size/1.45, this.speed * 1.6, this.asteroidIteration - 1);
+            new Asteroid(this.x, this.y, this.size/1.45, this.speed * 1.6, this.asteroidIteration - 1);
         }
         this.deleteObject();
     }

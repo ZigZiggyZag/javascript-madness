@@ -1,6 +1,7 @@
 /** @type {HTMLCanvasElement} */
-import {mouseX, mouseY, mouseClick, inCanvas, up, dw, lf, rt, fire1} from './input.js';
-import { generateId, clamp, convertToRadians, vectorToCartesian, convertToCartesian, convertToPolar, addVelocities, Vector } from "./helpers.js";
+import { ENABLE_CONSOLE_LOGGING, SHOW_BOUNDING_BOXES, SHOW_VELOCITY_VECTORS } from './flags.js';
+import { mouseX, mouseY, mouseClick, inCanvas, up, dw, lf, rt, fire1 } from './input.js';
+import { printToConsole, generateId, clamp, convertToRadians, vectorToCartesian, convertToCartesian, convertToPolar, addVelocities, Vector } from "./helpers.js";
 
 var canvas = document.getElementById("gameCanvas");
 var ctx = canvas.getContext('2d');
@@ -12,7 +13,7 @@ class Object {
     constructor(x, y, parent, name) {
         if (name === undefined) {
             this.id = generateId();
-            console.log('Object generated with id: ' + this.id);
+            printToConsole('Object generated with id: ' + this.id);
         }
         else {
             this.id = name
@@ -33,8 +34,12 @@ class Object {
         else if (this.y > canvas.height + this.size) {this.y = 0 - this.size}
     }
 
+    checkCollision() {
+        
+    }
+
     deleteObject() {
-        console.log('Deleting object with id: ' + this.id);
+        printToConsole('Deleting object with id: ' + this.id);
         delete objectList[this.id];
     }
 }
@@ -77,7 +82,6 @@ class Laser extends Object {
             this.x + this.size * Math.cos(this.angle),
             this.y + this.size * Math.sin(this.angle)
         );
-        ctx.closePath();
         ctx.stroke();
     }
 }
@@ -120,7 +124,7 @@ class Ship extends Object {
     fire() {
         if (fire1 && !this.fired && this.numLasers < this.maxLasers) {
             var offset = convertToCartesian(10, this.angle);
-            new Laser(this.x + offset[0], this.y + offset[1], this.angle, 5, 'blue', this.id);
+            new Laser(this.x + offset[0], this.y + offset[1], this.angle, 5, 'red', this.id);
             this.fired = true;
             this.numLasers++;
         }
@@ -179,16 +183,83 @@ class Ship extends Object {
         ctx.closePath();
         ctx.stroke();
         
-        // ctx.strokeStyle = 'red';
-        // ctx.beginPath();
-        // ctx.moveTo(this.x, this.y);
-        // var velocityCartesian = convertToCartesian(this.velocity.getMagnitude() * 10, this.velocity.getAngle());
-        // ctx.lineTo(
-        //     this.x + velocityCartesian[0],
-        //     this.y + velocityCartesian[1]
-        // )
-        // ctx.stroke();
+        if (SHOW_VELOCITY_VECTORS) {
+            ctx.strokeStyle = 'red';
+            ctx.beginPath();
+            ctx.moveTo(this.x, this.y);
+            var velocityCartesian = convertToCartesian(this.velocity.getMagnitude() * 10, this.velocity.getAngle());
+            ctx.lineTo(
+                this.x + velocityCartesian[0],
+                this.y + velocityCartesian[1]
+            )
+            ctx.stroke();
+        }
+
+        if (SHOW_BOUNDING_BOXES) {
+            ctx.strokeStyle = 'yellow';
+
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.stroke();
+        }
     }
 }
 
-export { objectList, Ship }
+class Asteroid extends Object {
+    constructor(x, y, size, speed, parent, name) {
+        super(x, y, parent, name);
+        this.size = size;
+        this.velocity = new Vector(speed, Math.random() * (2 * Math.PI));
+
+        this.verticesNum = 9 + Math.round(Math.random() * 4);
+
+        this.vertices = [];
+
+        for (let i = 0; i < this.verticesNum; i++) {
+            var magnitude = this.size + ((Math.random() * (this.size / 1.5)) - (this.size / 3))
+            var angle = (((2 * Math.PI) / this.verticesNum) * i) + ((Math.random() * (Math.PI / 45)) + (Math.PI / 90))
+            this.vertices.push(new Vector(magnitude, angle));
+        }
+    }
+
+    update() {
+        var cartesianVelocity = vectorToCartesian(this.velocity);
+        this.x += cartesianVelocity[0];
+        this.y += cartesianVelocity[1];
+
+        this.wrap();
+    }
+
+    draw() {
+        ctx.strokeStyle = 'white';
+
+        ctx.beginPath();
+        
+        var cartesian = vectorToCartesian(this.vertices[0])
+        ctx.moveTo(
+            this.x + cartesian[0],
+            this.y + cartesian[1]
+        )
+
+        for (let i = 1; i < this.verticesNum; i++) {
+            cartesian = vectorToCartesian(this.vertices[i])
+            ctx.lineTo(
+                this.x + cartesian[0],
+                this.y + cartesian[1]
+            )
+        }
+
+        ctx.closePath();
+        ctx.stroke();
+
+        if (SHOW_BOUNDING_BOXES) {
+            ctx.strokeStyle = 'yellow';
+
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+    }
+}
+
+export { objectList, Ship, Asteroid };

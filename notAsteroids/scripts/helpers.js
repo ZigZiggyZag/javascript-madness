@@ -1,3 +1,5 @@
+import { ENABLE_CONSOLE_LOGGING, SHOW_BOUNDING_BOXES } from './flags.js';
+
 class Vector {
     /**
      * @param {number} magnitude - Magnitude of the vector
@@ -23,6 +25,10 @@ class Vector {
     setAngle(angle) {
         this.angle = angle;
     }
+}
+
+function printToConsole(message) {
+    if (ENABLE_CONSOLE_LOGGING) {console.log(message)}
 }
 
 /**
@@ -94,4 +100,4 @@ function addVelocities(vector1, vector2) {
     return convertToPolar(vectorSum);
 }
 
-export {generateId, clamp, convertToRadians, vectorToCartesian, convertToCartesian, convertToPolar, addVelocities, Vector};
+export {printToConsole, generateId, clamp, convertToRadians, vectorToCartesian, convertToCartesian, convertToPolar, addVelocities, Vector};

@@ -1,13 +1,44 @@
 /** @type {HTMLCanvasElement} */
-import {mouseX, mouseY, mouseClick, inCanvas, up, dw, lf, rt} from './input.js';
-import { clamp, convertToRadians, vectorToCartesian, convertToCartesian, convertToPolar, addVelocities, Vector } from "./helpers.js";
+import {mouseX, mouseY, mouseClick, inCanvas, up, dw, lf, rt, fire1} from './input.js';
+import { generateId, clamp, convertToRadians, vectorToCartesian, convertToCartesian, convertToPolar, addVelocities, Vector } from "./helpers.js";
 
 var canvas = document.getElementById("gameCanvas");
 var ctx = canvas.getContext('2d');
 const defaultFriction = 1;
 
-class Ship {
-    constructor(x, y, angle, size) {
+var objectList = {};
+
+class Object {
+    constructor(name) {
+        if (name === undefined) {
+            this.id == generateId();
+        }
+        else {
+            this.id = name
+        }
+
+        objectList[this.id] = this;
+    }
+
+    deleteObject() {
+        delete objectList[this.id];
+    }
+}
+
+class Laser extends Object {
+    constructor(x, y, angle, size, color, name) {
+        super(name);
+        this.x = x;
+        this.y = y;
+        this.angle = angle;
+        this.size = size;
+        this.color = color;
+    }
+}
+
+class Ship extends Object {
+    constructor(x, y, angle, size, name) {
+        super(name);
         this.x = x;
         this.y = y;
         this.angle = convertToRadians(angle);
@@ -16,9 +47,10 @@ class Ship {
         this.angularAcceleration = 0.3;
         this.velocity = new Vector(0, this.angle);
         this.angularVelocity = 0;
-        this.maxVelocity = 6;
+        this.maxVelocity = 4;
         this.maxAngularVelocity = 3;
         this.friction = 1;
+        this.reloading = false;
     }
 
     getX() {
@@ -39,6 +71,12 @@ class Ship {
 
         if (this.y < 0 - this.size) {this.y = canvas.height + this.size}
         else if (this.y > canvas.height + this.size) {this.y = 0 - this.size}
+    }
+
+    fire() {
+        if (fire1 && !this.reloading) {
+            // test
+        }
     }
 
     update() {
@@ -91,16 +129,16 @@ class Ship {
         ctx.closePath();
         ctx.stroke();
         
-        ctx.strokeStyle = 'red';
-        ctx.beginPath();
-        ctx.moveTo(this.x, this.y);
-        var velocityCartesian = convertToCartesian(this.velocity.getMagnitude() * 10, this.velocity.getAngle());
-        ctx.lineTo(
-            this.x + velocityCartesian[0],
-            this.y + velocityCartesian[1]
-        )
-        ctx.stroke();
+        // ctx.strokeStyle = 'red';
+        // ctx.beginPath();
+        // ctx.moveTo(this.x, this.y);
+        // var velocityCartesian = convertToCartesian(this.velocity.getMagnitude() * 10, this.velocity.getAngle());
+        // ctx.lineTo(
+        //     this.x + velocityCartesian[0],
+        //     this.y + velocityCartesian[1]
+        // )
+        // ctx.stroke();
     }
 }
 
-export {Ship}
+export { objectList, Ship }

@@ -26,6 +26,18 @@ class Vector {
 }
 
 /**
+ * @param {number} length - Length of id (default 32)
+ * @param {String} id - Alphanumeric id of requested length
+ */
+function generateId(length = 32) {
+    var id = (new Date()).getTime().toString(36)
+    do {
+        id += (Math.floor((Math.random() * 35))).toString(36);
+    } while (id.length < length);
+    return id;
+}
+
+/**
  * @param {number} value - The value to clamp
  * @param {number} min - The minimum the value will reach
  * @param {number} max - The maximum the value will reach
@@ -82,4 +94,4 @@ function addVelocities(vector1, vector2) {
     return convertToPolar(vectorSum);
 }
 
-export {clamp, convertToRadians, vectorToCartesian, convertToCartesian, convertToPolar, addVelocities, Vector};
+export {generateId, clamp, convertToRadians, vectorToCartesian, convertToCartesian, convertToPolar, addVelocities, Vector};

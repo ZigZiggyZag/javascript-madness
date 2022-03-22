@@ -11,17 +11,19 @@ function draw(){
     
     // Update all object logic
     for (var key in objectList) {
-        if (!(typeof objectList[key].update === 'undefined')) {
+        if (typeof objectList[key].update !== 'undefined') {
             objectList[key].update();
         }
     }
 
-    // Update all object draw functions
+    // Draw all objects
     for (var key in objectList) {
-        if (!(typeof objectList[key].draw === 'undefined')) {
+        if (typeof objectList[key].draw !== 'undefined') {
             objectList[key].draw();
         }
     }
+    ctx.fillStyle = 'white';
+    ctx.fillText('Number of Objects in objectList: ' + Object.keys(objectList).length, 10, 10);
 
     requestAnimationFrame(draw);
 }

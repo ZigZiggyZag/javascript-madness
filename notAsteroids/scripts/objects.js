@@ -1,7 +1,7 @@
 /** @type {HTMLCanvasElement} */
 import { ENABLE_CONSOLE_LOGGING, SHOW_BOUNDING_BOXES, SHOW_VELOCITY_VECTORS } from './flags.js';
 import { mouseX, mouseY, mouseClick, inCanvas, up, dw, lf, rt, fire1 } from './input.js';
-import { printToConsole, generateId, clamp, convertToRadians, vectorToCartesian, convertToCartesian, convertToPolar, addVelocities, Vector } from "./helpers.js";
+import { printToConsole, generateId, clamp, distanceBetweenPoints, convertToRadians, vectorToCartesian, convertToCartesian, convertToPolar, addVelocities, Vector } from "./helpers.js";
 
 var canvas = document.getElementById("gameCanvas");
 var ctx = canvas.getContext('2d');
@@ -10,7 +10,7 @@ const defaultFriction = 1;
 var objectList = {};
 
 class Object {
-    constructor(x, y, parent, name) {
+    constructor(x, y, size, parent, name) {
         if (name === undefined) {
             this.id = generateId();
             printToConsole('Object generated with id: ' + this.id);
@@ -22,8 +22,13 @@ class Object {
         this.parent = parent;
         this.x = x;
         this.y = y;
+        this.size = size;
 
         objectList[this.id] = this;
+    }
+
+    getId() {
+        return this.id;
     }
 
     wrap() {
@@ -35,7 +40,13 @@ class Object {
     }
 
     checkCollision() {
-        
+        for (var key in objectList) {
+            if (key !== this.id) {
+                if (distanceBetweenPoints(this.x, this.y, objectList[key].x, objectList[key].y) < this.size + objectList[key].size) {
+                    return key;
+                }
+            }
+        }
     }
 
     deleteObject() {
@@ -46,9 +57,8 @@ class Object {
 
 class Laser extends Object {
     constructor(x, y, angle, size, color, parent, name) {
-        super(x, y, parent, name);
+        super(x, y, size, parent, name);
         this.angle = angle;
-        this.size = size;
         this.color = color;
         this.lifespan = 60;
         this.currentLife = 0;
@@ -68,6 +78,16 @@ class Laser extends Object {
             this.deleteObject();
         }
 
+        var collidingObject = this.checkCollision();
+
+        if (objectList[collidingObject] instanceof Asteroid) {
+            objectList[collidingObject].destroy();
+            if (this.parent != undefined && typeof objectList[this.parent].decreaseNumOfLasers() !== 'undefined') {
+                objectList[this.parent].decreaseNumOfLasers();
+            }
+            this.deleteObject();
+        }
+
         this.wrap();
     }
 
@@ -75,23 +95,39 @@ class Laser extends Object {
         ctx.strokeStyle = this.color;
         ctx.beginPath();
         ctx.moveTo(
-            this.x - this.size * Math.cos(this.angle),
-            this.y - this.size * Math.sin(this.angle)
+            this.x - (this.size * 1.5) * Math.cos(this.angle),
+            this.y - (this.size * 1.5) * Math.sin(this.angle)
         );
         ctx.lineTo(
-            this.x + this.size * Math.cos(this.angle),
-            this.y + this.size * Math.sin(this.angle)
+            this.x + (this.size * 1.5) * Math.cos(this.angle),
+            this.y + (this.size * 1.5) * Math.sin(this.angle)
         );
         ctx.stroke();
+
+        if (SHOW_BOUNDING_BOXES) {
+            var collidingObject = this.checkCollision();
+
+            if (objectList[collidingObject] instanceof Asteroid) {
+                ctx.fillStyle = 'yellow';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            else {
+                ctx.strokeStyle = 'yellow';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+        }
     }
 }
 
 class Ship extends Object {
 
     constructor(x, y, angle, size, parent, name) {
-        super(x, y, parent, name);
+        super(x, y, size, parent, name);
         this.angle = convertToRadians(angle);
-        this.size = size
         this.acceleration = 0.1;
         this.angularAcceleration = 0.3;
         this.velocity = new Vector(0, this.angle);
@@ -196,20 +232,31 @@ class Ship extends Object {
         }
 
         if (SHOW_BOUNDING_BOXES) {
-            ctx.strokeStyle = 'yellow';
+            var collidingObject = this.checkCollision();
 
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-            ctx.stroke();
+            if (objectList[collidingObject] instanceof Asteroid) {
+                ctx.fillStyle = 'yellow';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            else {
+                ctx.strokeStyle = 'yellow';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.stroke();
+            }
         }
     }
 }
 
 class Asteroid extends Object {
-    constructor(x, y, size, speed, parent, name) {
-        super(x, y, parent, name);
-        this.size = size;
-        this.velocity = new Vector(speed, Math.random() * (2 * Math.PI));
+    constructor(x, y, size, speed, asteroidIteration, parent, name) {
+        super(x, y, size, parent, name);
+        this.speed = speed;
+        this.asteroidIteration = asteroidIteration;
+
+        this.velocity = new Vector(this.speed, Math.random() * (2 * Math.PI));
 
         this.verticesNum = 9 + Math.round(Math.random() * 4);
 
@@ -220,6 +267,14 @@ class Asteroid extends Object {
             var angle = (((2 * Math.PI) / this.verticesNum) * i) + ((Math.random() * (Math.PI / 45)) + (Math.PI / 90))
             this.vertices.push(new Vector(magnitude, angle));
         }
+    }
+
+    destroy() {
+        if (this.asteroidIteration > 1) {
+            new Asteroid(this.x, this.y, this.size/1.4, this.speed * 1.5, this.asteroidIteration - 1);
+            new Asteroid(this.x, this.y, this.size/1.4, this.speed * 1.5, this.asteroidIteration - 1);
+        }
+        this.deleteObject();
     }
 
     update() {
@@ -262,4 +317,30 @@ class Asteroid extends Object {
     }
 }
 
-export { objectList, Ship, Asteroid };
+class AsteroidGenerator {
+    constructor(startingAsteroids, asteroidSize, asteroidSpeed, playerObjectId) {
+        this.startingAsteroids = startingAsteroids;
+        this.asteroidSize = asteroidSize;
+        this.asteroidSpeed = asteroidSpeed;
+        this.playerObjectId = playerObjectId;
+        this.numOfAsteroids = 0;
+
+        while(this.numOfAsteroids < this.startingAsteroids) {
+            this.spawnAsteroid();
+        }
+    }
+
+    generatePoint() {
+        return [Math.random() * canvas.width, Math.random() * canvas.height];
+    }
+
+    spawnAsteroid() {
+        do {
+            var location = this.generatePoint();
+        } while (distanceBetweenPoints(objectList[this.playerObjectId].x, objectList[this.playerObjectId].y, location[0], location[1]) < 2 * this.asteroidSize + objectList[this.playerObjectId].size);
+        new Asteroid(location[0], location[1], this.asteroidSize, this.asteroidSpeed, 3);
+        this.numOfAsteroids++;
+    }
+}
+
+export { objectList, Ship, AsteroidGenerator };

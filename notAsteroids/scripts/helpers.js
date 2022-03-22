@@ -53,6 +53,10 @@ function clamp(value, min, max) {
     return Math.max(min, Math.min(value, max));
 }
 
+function distanceBetweenPoints(x0, y0, x1, y1) {
+    return Math.sqrt(Math.pow((x0 - x1), 2) + Math.pow((y0 - y1), 2))
+}
+
 /**
  * @param {number} degrees - Degrees
  * @returns {number} Radians 
@@ -100,4 +104,4 @@ function addVelocities(vector1, vector2) {
     return convertToPolar(vectorSum);
 }
 
-export {printToConsole, generateId, clamp, convertToRadians, vectorToCartesian, convertToCartesian, convertToPolar, addVelocities, Vector};
+export { printToConsole, generateId, clamp, distanceBetweenPoints, convertToRadians, vectorToCartesian, convertToCartesian, convertToPolar, addVelocities, Vector };

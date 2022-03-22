@@ -1,5 +1,5 @@
 import {mouseX, mouseY, mouseClick, inCanvas, up, dw, lf, rt} from './input.js';
-import {objectList, Ship, AsteroidGenerator} from './objects.js';
+import {objectList, Ship, AsteroidGenerator, drawCursor} from './objects.js';
 
 var canvas = document.getElementById("gameCanvas");
 var ctx = canvas.getContext('2d');
@@ -25,6 +25,9 @@ function draw(){
             objectList[key].draw();
         }
     }
+
+    drawCursor();
+
     ctx.fillStyle = 'white';
     ctx.fillText('Number of Objects in objectList: ' + Object.keys(objectList).length, 10, 10);
 

@@ -337,10 +337,32 @@ class AsteroidGenerator {
     spawnAsteroid() {
         do {
             var location = this.generatePoint();
-        } while (distanceBetweenPoints(objectList[this.playerObjectId].x, objectList[this.playerObjectId].y, location[0], location[1]) < 2 * this.asteroidSize + objectList[this.playerObjectId].size);
+        } while (distanceBetweenPoints(objectList[this.playerObjectId].x, objectList[this.playerObjectId].y, location[0], location[1]) < 4 * this.asteroidSize + objectList[this.playerObjectId].size);
         new Asteroid(location[0], location[1], this.asteroidSize, this.asteroidSpeed, 3);
         this.numOfAsteroids++;
     }
 }
 
-export { objectList, Ship, AsteroidGenerator };
+function drawCursor() {
+    ctx.strokeStyle = 'gray';
+    ctx.beginPath();
+
+    var angle = convertToRadians(45);
+
+    ctx.moveTo(
+        mouseX,
+        mouseY
+    );
+    ctx.lineTo(
+        mouseX + 10 * Math.cos(angle + convertToRadians(20)),
+        mouseY + 10 * Math.sin(angle + convertToRadians(20))
+    );
+    ctx.lineTo(
+        mouseX + 10 * Math.cos(angle + convertToRadians(-20)),
+        mouseY + 10 * Math.sin(angle + convertToRadians(-20))
+    );
+    ctx.closePath();
+    ctx.stroke();
+}
+
+export { objectList, Ship, AsteroidGenerator, drawCursor };

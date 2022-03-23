@@ -1,6 +1,6 @@
 /** @type {HTMLCanvasElement} */
 import { ENABLE_CONSOLE_LOGGING, SHOW_BOUNDING_BOXES, SHOW_VELOCITY_VECTORS } from './flags.js';
-import { laserFireSound, explosionSound, engineSound } from './assets.js'
+import { engineSound, laserSound, explosion1Sound } from './assets.js'
 import { mouseX, mouseY, mouseClick, inCanvas, up, dw, lf, rt, fire1 } from './input.js';
 import { printToConsole, generateId, clamp, distanceBetweenPoints, convertToRadians, vectorToCartesian, convertToCartesian, convertToPolar, addVelocities, Vector } from "./helpers.js";
 
@@ -57,22 +57,22 @@ class Object {
 }
 
 class Laser extends Object {
-    constructor(x, y, angle, size, color, parent, name) {
+    constructor(x, y, angle, size, speed, lifeSpan, color, parent, name) {
         super(x, y, size, parent, name);
         this.angle = angle;
         this.color = color;
-        this.lifespan = 60;
-        this.currentLife = 0;
-        this.velocity = new Vector(10, this.angle);
+        this.lifeSpan = lifeSpan;
+        this.age = 0;
+        this.velocity = new Vector(speed, this.angle);
     }
 
     update() {
         var cartesianVelocity = vectorToCartesian(this.velocity);
         this.x += cartesianVelocity[0];
         this.y += cartesianVelocity[1];
-        this.currentLife++;
+        this.age++;
 
-        if(this.currentLife >= this.lifespan) {
+        if(this.age >= this.lifeSpan) {
             if (this.parent != undefined && typeof objectList[this.parent].decreaseNumOfLasers() !== 'undefined') {
                 objectList[this.parent].decreaseNumOfLasers();
             }
@@ -130,15 +130,15 @@ class Ship extends Object {
         super(x, y, size, parent, name);
         this.angle = convertToRadians(angle);
         this.acceleration = 0.1;
-        this.angularAcceleration = 0.3;
+        this.angularAcceleration = 0.5;
         this.velocity = new Vector(0, this.angle);
         this.angularVelocity = 0;
         this.maxVelocity = 4;
-        this.maxAngularVelocity = 3;
+        this.maxAngularVelocity = 4;
         this.friction = 1;
         this.reloading = false;
         this.fired = false;
-        this.maxLasers = 3;
+        this.maxLasers = 5;
         this.numLasers = 0;
     }
 
@@ -161,12 +161,11 @@ class Ship extends Object {
     fire() {
         if (fire1 && !this.fired && this.numLasers < this.maxLasers) {
             var offset = convertToCartesian(10, this.angle);
-            new Laser(this.x + offset[0], this.y + offset[1], this.angle, 5, 'red', this.id);
-            laserFireSound.pause();
-            laserFireSound.currentTime = 0;
-            laserFireSound.play();
+            new Laser(this.x + offset[0], this.y + offset[1], this.angle, 5, 7, 80, 'red', this.id);
             this.fired = true;
             this.numLasers++;
+
+            laserSound.play();
         }
         if (!fire1) {this.fired = false};
     }
@@ -191,7 +190,9 @@ class Ship extends Object {
 
             this.velocity = result;
 
-            engineSound.play();
+            if (!engineSound.playing()) {
+                engineSound.play();
+            }
         }
         else {
             this.velocity.setMagnitude = this.velocity.getMagnitude() * 1/this.friction;
@@ -277,9 +278,9 @@ class Asteroid extends Object {
     }
 
     destroy() {
-        explosionSound.pause();
-        explosionSound.currentTime = 0;
-        explosionSound.play();
+        explosion1Sound.rate(Math.random() + 0.5);
+        explosion1Sound.play()
+
         if (this.asteroidIteration > 1) {
             new Asteroid(this.x, this.y, this.size/1.45, this.speed * 1.6, this.asteroidIteration - 1);
             new Asteroid(this.x, this.y, this.size/1.45, this.speed * 1.6, this.asteroidIteration - 1);

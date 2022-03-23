@@ -1,8 +1,8 @@
 /** @type {HTMLCanvasElement} */
 import { ENABLE_CONSOLE_LOGGING, SHOW_BOUNDING_BOXES, SHOW_VELOCITY_VECTORS } from './flags.js';
-import { engineSound, laserSound, explosion1Sound } from './assets.js'
+import { engineSound, laserSound, explosion1Sound, playerDeathSound } from './assets.js'
 import { mouseX, mouseY, mouseClick, inCanvas, up, dw, lf, rt, fire1 } from './input.js';
-import { printToConsole, generateId, clamp, distanceBetweenPoints, convertToRadians, vectorToCartesian, convertToCartesian, convertToPolar, addVelocities, Vector } from "./helpers.js";
+import { printToConsole, randBetweenValues, generateId, clamp, distanceBetweenPoints, convertToRadians, vectorToCartesian, convertToCartesian, convertToPolar, addVelocities, Vector } from "./helpers.js";
 
 var canvas = document.getElementById("gameCanvas");
 var ctx = canvas.getContext('2d');
@@ -66,6 +66,13 @@ class Laser extends Object {
         this.velocity = new Vector(speed, this.angle);
     }
 
+    destroy() {
+        if (this.parent != undefined && typeof objectList[this.parent].decreaseNumOfLasers() !== 'undefined') {
+            objectList[this.parent].decreaseNumOfLasers();
+        }
+        this.deleteObject()
+    }
+
     update() {
         var cartesianVelocity = vectorToCartesian(this.velocity);
         this.x += cartesianVelocity[0];
@@ -83,10 +90,7 @@ class Laser extends Object {
 
         if (objectList[collidingObject] instanceof Asteroid) {
             objectList[collidingObject].destroy();
-            if (this.parent != undefined && typeof objectList[this.parent].decreaseNumOfLasers() !== 'undefined') {
-                objectList[this.parent].decreaseNumOfLasers();
-            }
-            this.deleteObject();
+            this.destroy();
         }
 
         this.wrap();
@@ -138,8 +142,12 @@ class Ship extends Object {
         this.friction = 1;
         this.reloading = false;
         this.fired = false;
-        this.maxLasers = 5;
+        this.lives = 3;
+        this.maxLasers = 4;
         this.numLasers = 0;
+        this.destroyed = false;
+        this.respawnTime = 60;
+        this.respawnTimer = 0;
     }
 
     getX() {
@@ -160,8 +168,8 @@ class Ship extends Object {
 
     fire() {
         if (fire1 && !this.fired && this.numLasers < this.maxLasers) {
-            var offset = convertToCartesian(10, this.angle);
-            new Laser(this.x + offset[0], this.y + offset[1], this.angle, 5, 7, 80, 'red', this.id);
+            var offset = convertToCartesian(20, this.angle);
+            new Laser(this.x + offset[0], this.y + offset[1], this.angle, 5, 8, 80, 'red', this.id);
             this.fired = true;
             this.numLasers++;
 
@@ -170,73 +178,107 @@ class Ship extends Object {
         if (!fire1) {this.fired = false};
     }
 
+    destroy() {
+        this.destroyed = true;
+        engineSound.pause();
+        playerDeathSound.play();
+        this.respawnTimer = 0;
+        this.x = canvas.width/2;
+        this.y = canvas.height/2;
+        this.angle = convertToRadians(270);
+        this.angularVelocity = 0;
+        this.velocity = new Vector(0, this.angle);
+    }
+
     update() {
-        if (lf || rt) {
-            var leftRight = (rt ? 1 : 0) - (lf ? 1 : 0);
-            this.angularVelocity += leftRight * this.angularAcceleration;
-            this.angularVelocity = clamp(this.angularVelocity, -this.maxAngularVelocity, this.maxAngularVelocity);
+        if (!this.destroyed) {
+            if (lf || rt) {
+                var leftRight = (rt ? 1 : 0) - (lf ? 1 : 0);
+                this.angularVelocity += leftRight * this.angularAcceleration;
+                this.angularVelocity = clamp(this.angularVelocity, -this.maxAngularVelocity, this.maxAngularVelocity);
+            }
+            else {
+                this.angularVelocity = this.angularVelocity * 1/1.2;
+            }
+
+            this.angle += convertToRadians(this.angularVelocity);
+
+            if (up) {
+                var accelerationVector = new Vector(this.acceleration, this.angle);
+
+                var result = addVelocities(this.velocity, accelerationVector);
+                result.setMagnitude(clamp(result.getMagnitude(), 0, this.maxVelocity))
+
+                this.velocity = result;
+
+                if (!engineSound.playing()) {
+                    engineSound.play();
+                }
+            }
+            else {
+                this.velocity.setMagnitude = this.velocity.getMagnitude() * 1/this.friction;
+                engineSound.pause();
+            }
+
+            var cartesianVelocity = vectorToCartesian(this.velocity);
+
+            this.x += cartesianVelocity[0]
+            this.y += cartesianVelocity[1]
+            
+            var collidingObject = this.checkCollision();
+
+            if (objectList[collidingObject] instanceof Asteroid || objectList[collidingObject] instanceof Laser) {
+                objectList[collidingObject].destroy();
+                this.destroy();
+            }
+
+            this.fire();
+            this.wrap();
         }
         else {
-            this.angularVelocity = this.angularVelocity * 1/1.2;
-        }
-
-        this.angle += convertToRadians(this.angularVelocity);
-
-        if (up) {
-            var accelerationVector = new Vector(this.acceleration, this.angle);
-
-            var result = addVelocities(this.velocity, accelerationVector);
-            result.setMagnitude(clamp(result.getMagnitude(), 0, this.maxVelocity))
-
-            this.velocity = result;
-
-            if (!engineSound.playing()) {
-                engineSound.play();
+            this.respawnTimer++;
+            if (this.respawnTimer >= this.respawnTime) {
+                var collidingObject = this.checkCollision();
+                if (objectList[collidingObject] instanceof Asteroid || objectList[collidingObject] instanceof Laser) {
+                    this.respawnTimer = 0;
+                }
+                else {
+                    this.destroyed = false;
+                }
             }
         }
-        else {
-            this.velocity.setMagnitude = this.velocity.getMagnitude() * 1/this.friction;
-            engineSound.pause();
-        }
-
-        var cartesianVelocity = vectorToCartesian(this.velocity);
-
-        this.x += cartesianVelocity[0]
-        this.y += cartesianVelocity[1]
-
-        this.fire();
-
-        this.wrap();
     }
 
     draw() {
-        ctx.strokeStyle = 'white';
-        ctx.beginPath();
-        ctx.moveTo(
-            this.x + this.size * Math.cos(this.angle),
-            this.y + this.size * Math.sin(this.angle)
-        );
-        ctx.lineTo(
-            this.x + this.size * Math.cos(this.angle + convertToRadians(130)),
-            this.y + this.size * Math.sin(this.angle + convertToRadians(130))
-        );
-        ctx.lineTo(
-            this.x + this.size * Math.cos(this.angle + convertToRadians(-130)),
-            this.y + this.size * Math.sin(this.angle + convertToRadians(-130))
-        );
-        ctx.closePath();
-        ctx.stroke();
-        
-        if (SHOW_VELOCITY_VECTORS) {
-            ctx.strokeStyle = 'red';
+        if (!this.destroyed) {
+            ctx.strokeStyle = 'white';
             ctx.beginPath();
-            ctx.moveTo(this.x, this.y);
-            var velocityCartesian = convertToCartesian(this.velocity.getMagnitude() * 10, this.velocity.getAngle());
+            ctx.moveTo(
+                this.x + this.size * Math.cos(this.angle),
+                this.y + this.size * Math.sin(this.angle)
+            );
             ctx.lineTo(
-                this.x + velocityCartesian[0],
-                this.y + velocityCartesian[1]
-            )
+                this.x + this.size * Math.cos(this.angle + convertToRadians(130)),
+                this.y + this.size * Math.sin(this.angle + convertToRadians(130))
+            );
+            ctx.lineTo(
+                this.x + this.size * Math.cos(this.angle + convertToRadians(-130)),
+                this.y + this.size * Math.sin(this.angle + convertToRadians(-130))
+            );
+            ctx.closePath();
             ctx.stroke();
+            
+            if (SHOW_VELOCITY_VECTORS) {
+                ctx.strokeStyle = 'red';
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);
+                var velocityCartesian = convertToCartesian(this.velocity.getMagnitude() * 10, this.velocity.getAngle());
+                ctx.lineTo(
+                    this.x + velocityCartesian[0],
+                    this.y + velocityCartesian[1]
+                )
+                ctx.stroke();
+            }
         }
 
         if (SHOW_BOUNDING_BOXES) {
@@ -282,8 +324,8 @@ class Asteroid extends Object {
         explosion1Sound.play()
 
         if (this.asteroidIteration > 1) {
-            new Asteroid(this.x, this.y, this.size/1.45, this.speed * 1.6, this.asteroidIteration - 1);
-            new Asteroid(this.x, this.y, this.size/1.45, this.speed * 1.6, this.asteroidIteration - 1);
+            new Asteroid(this.x, this.y, this.size/1.6, this.speed * 1.6, this.asteroidIteration - 1);
+            new Asteroid(this.x, this.y, this.size/1.6, this.speed * 1.6, this.asteroidIteration - 1);
         }
         this.deleteObject();
     }

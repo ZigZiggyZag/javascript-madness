@@ -14,4 +14,9 @@ var explosion1Sound = new Howl({
     volume: 0.5
 });
 
-export { engineSound, laserSound, explosion1Sound };
+var playerDeathSound = new Howl({
+    src: ['./assets/audio/playerDead.ogg', './assets/audio/playerDead.mp3'],
+    volume: 0.5
+});
+
+export { engineSound, laserSound, explosion1Sound, playerDeathSound };

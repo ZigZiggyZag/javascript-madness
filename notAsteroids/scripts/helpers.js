@@ -31,6 +31,10 @@ function printToConsole(message) {
     if (ENABLE_CONSOLE_LOGGING) {console.log(message)}
 }
 
+function randBetweenValues(min, max) {
+    return (min + Math.random() * (max - min))
+}
+
 /**
  * @param {number} length - Length of id (default 32)
  * @param {String} id - Alphanumeric id of requested length
@@ -104,4 +108,4 @@ function addVelocities(vector1, vector2) {
     return convertToPolar(vectorSum);
 }
 
-export { printToConsole, generateId, clamp, distanceBetweenPoints, convertToRadians, vectorToCartesian, convertToCartesian, convertToPolar, addVelocities, Vector };
+export { printToConsole, randBetweenValues, generateId, clamp, distanceBetweenPoints, convertToRadians, vectorToCartesian, convertToCartesian, convertToPolar, addVelocities, Vector };

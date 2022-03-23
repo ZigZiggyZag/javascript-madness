@@ -6,7 +6,7 @@ var ctx = canvas.getContext('2d');
 
 ctx.lineWidth = 1.2;
 
-var playerShip = new Ship(canvas.width/2, canvas.height/2, 0, 7.5);
+var playerShip = new Ship(canvas.width/2, canvas.height/2, 270, 7.5);
 new AsteroidGenerator(6, 30, 1, playerShip.getId());
 
 function draw(){

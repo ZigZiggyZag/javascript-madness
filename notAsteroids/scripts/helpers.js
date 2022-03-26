@@ -36,6 +36,16 @@ function randBetweenValues(min, max) {
 }
 
 /**
+ * @param {number} start - Starting value
+ * @param {number} end -Ending Value
+ * @param {number} val - Percentage between the two values
+ * @returns {number} - Linear interpolation between two values
+ */
+function lerp(start, end, val) {
+    return start + val * (end - start);
+}
+
+/**
  * @param {number} length - Length of id (default 32)
  * @param {String} id - Alphanumeric id of requested length
  */
@@ -108,4 +118,4 @@ function addVelocities(vector1, vector2) {
     return convertToPolar(vectorSum);
 }
 
-export { printToConsole, randBetweenValues, generateId, clamp, distanceBetweenPoints, convertToRadians, vectorToCartesian, convertToCartesian, convertToPolar, addVelocities, Vector };
+export { printToConsole, randBetweenValues, lerp, generateId, clamp, distanceBetweenPoints, convertToRadians, vectorToCartesian, convertToCartesian, convertToPolar, addVelocities, Vector };

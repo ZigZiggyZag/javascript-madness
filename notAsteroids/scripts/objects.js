@@ -2,7 +2,7 @@
 import { ENABLE_CONSOLE_LOGGING, SHOW_BOUNDING_BOXES, SHOW_VELOCITY_VECTORS } from './flags.js';
 import { engineSound, laserSound, explosion1Sound, playerDeathSound } from './assets.js'
 import { mouseX, mouseY, mouseClick, inCanvas, up, dw, lf, rt, fire1 } from './input.js';
-import { printToConsole, randBetweenValues, generateId, clamp, distanceBetweenPoints, convertToRadians, vectorToCartesian, convertToCartesian, convertToPolar, addVelocities, Vector } from "./helpers.js";
+import { printToConsole, randBetweenValues, lerp, generateId, clamp, distanceBetweenPoints, convertToRadians, vectorToCartesian, convertToCartesian, convertToPolar, addVelocities, Vector } from "./helpers.js";
 
 var canvas = document.getElementById("gameCanvas");
 var ctx = canvas.getContext('2d');

@@ -1,6 +1,6 @@
 import { mouseX, mouseY, mouseClick, inCanvas, up, dw, lf, rt } from './input.js';
 import { objectList, Ship, AsteroidGenerator, drawCursor } from './objects.js';
-import { particles } from './particle.js';
+import { particleList } from './particle.js';
 
 var canvas = document.getElementById("gameCanvas");
 var ctx = canvas.getContext('2d');
@@ -8,11 +8,13 @@ var ctx = canvas.getContext('2d');
 ctx.lineWidth = 1.2;
 
 var playerShip = new Ship(canvas.width/2, canvas.height/2, 270, 7.5);
-new AsteroidGenerator(6, 30, 1, playerShip.getId());
+var generator = new AsteroidGenerator(6, 30, 1, playerShip.getId());
 
 function draw(){
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
+    generator.update();
+
     // Update all object logic
     for (var key in objectList) {
         if (typeof objectList[key].update !== 'undefined') {
@@ -27,14 +29,12 @@ function draw(){
         }
     }
 
-    var tempPartList = particles.getParticles()
-
-    for (const particle of tempPartList) {
-        particle.update();
+    for (var key in particleList) {
+        particleList[key].update();
     }
 
-    for (const particle of tempPartList) {
-        particle.draw();
+    for (var key in particleList) {
+        particleList[key].draw();
     }
 
     drawCursor();

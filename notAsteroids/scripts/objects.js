@@ -9,9 +9,8 @@ var canvas = document.getElementById("gameCanvas");
 var ctx = canvas.getContext('2d');
 const defaultFriction = 1;
 
-var playerExplosion = new ParticleController("line", 7.5, 0.5, 75, 45, 1, 0.5, 'white');
-var playerExplosion2 = new ParticleController("square", 1, 0, 100, 60, 2.5, 0.5, 'white');
-var asteroidExplosion = new ParticleController("square", 1, 0, 70, 30, 1.5, 0.5, 'white');
+var playerExplosion = new ParticleController("line", 5, 2.5, 140, 10, 0.15, 0.05, 'white');
+var asteroidExplosion = new ParticleController("square", 1, 0, 50, 40, 1.5, 0.5, 'white');
 
 var objectList = {};
 
@@ -72,8 +71,8 @@ class Laser extends Object {
     }
 
     destroy() {
-        if (this.parent != undefined && typeof objectList[this.parent].decreaseNumOfLasers() !== 'undefined') {
-            objectList[this.parent].decreaseNumOfLasers();
+        if (this.parent != undefined && typeof this.parent.decreaseNumOfLasers() !== 'undefined') {
+            this.parent.decreaseNumOfLasers();
         }
         this.deleteObject()
     }
@@ -85,8 +84,8 @@ class Laser extends Object {
         this.age++;
 
         if(this.age >= this.lifeSpan) {
-            if (this.parent != undefined && typeof objectList[this.parent].decreaseNumOfLasers() !== 'undefined') {
-                objectList[this.parent].decreaseNumOfLasers();
+            if (this.parent != undefined && typeof this.parent.decreaseNumOfLasers() !== 'undefined') {
+                this.parent.decreaseNumOfLasers();
             }
             this.deleteObject();
         }
@@ -151,7 +150,7 @@ class Ship extends Object {
         this.maxLasers = 4;
         this.numLasers = 0;
         this.destroyed = false;
-        this.respawnTime = 60;
+        this.respawnTime = 170;
         this.respawnTimer = 0;
     }
 
@@ -174,7 +173,7 @@ class Ship extends Object {
     fire() {
         if (fire1 && !this.fired && this.numLasers < this.maxLasers) {
             var offset = convertToCartesian(20, this.angle);
-            new Laser(this.x + offset[0], this.y + offset[1], this.angle, 5, 8, 80, 'red', this.id);
+            new Laser(this.x + offset[0], this.y + offset[1], this.angle, 5, 8, 80, 'red', this);
             this.fired = true;
             this.numLasers++;
 
@@ -184,8 +183,7 @@ class Ship extends Object {
     }
 
     destroy() {
-        playerExplosion.spawnParticles(this.x, this.y, this.size, 3);
-        playerExplosion2.spawnParticles(this.x, this.y, this.size, 6);
+        playerExplosion.spawnParticles(this.x, this.y, this.size, 5);
         this.destroyed = true;
         engineSound.pause();
         playerDeathSound.play();
@@ -319,6 +317,10 @@ class Asteroid extends Object {
 
         this.vertices = [];
 
+        if (this.parent != undefined && typeof this.parent.increaseNumOfAsteroids() !== 'undefined') {
+            this.parent.increaseNumOfAsteroids();
+        }
+
         for (let i = 0; i < this.verticesNum; i++) {
             var magnitude = this.size + ((Math.random() * (this.size / 1.5)) - (this.size / 3))
             var angle = (((2 * Math.PI) / this.verticesNum) * i) + ((Math.random() * (Math.PI / 45)) + (Math.PI / 90))
@@ -330,12 +332,17 @@ class Asteroid extends Object {
         explosion1Sound.rate(Math.random() + 0.5);
         explosion1Sound.play()
 
-        asteroidExplosion.spawnParticles(this.x, this.y, this.size, Math.floor(this.size / 1.5));
+        asteroidExplosion.spawnParticles(this.x, this.y, this.size, Math.floor(this.size / 2));
 
         if (this.asteroidIteration > 1) {
             new Asteroid(this.x, this.y, this.size/1.6, this.speed * 1.6, this.asteroidIteration - 1);
             new Asteroid(this.x, this.y, this.size/1.6, this.speed * 1.6, this.asteroidIteration - 1);
         }
+
+        if (this.parent != undefined && typeof this.parent.decreaseNumOfAsteroids() !== 'undefined') {
+            this.parent.decreaseNumOfAsteroids();
+        }
+
         this.deleteObject();
     }
 
@@ -386,22 +393,33 @@ class AsteroidGenerator {
         this.asteroidSpeed = asteroidSpeed;
         this.playerObjectId = playerObjectId;
         this.numOfAsteroids = 0;
-
-        while(this.numOfAsteroids < this.startingAsteroids) {
-            this.spawnAsteroid();
-        }
     }
 
     generatePoint() {
         return [Math.random() * canvas.width, Math.random() * canvas.height];
     }
 
+    increaseNumOfAsteroids() {
+        this.numOfAsteroids++;
+    }
+
+    decreaseNumOfAsteroids() {
+        this.numOfAsteroids--;
+    }
+
     spawnAsteroid() {
         do {
             var location = this.generatePoint();
         } while (distanceBetweenPoints(objectList[this.playerObjectId].x, objectList[this.playerObjectId].y, location[0], location[1]) < 4 * this.asteroidSize + objectList[this.playerObjectId].size);
-        new Asteroid(location[0], location[1], this.asteroidSize, this.asteroidSpeed, 3);
-        this.numOfAsteroids++;
+        new Asteroid(location[0], location[1], this.asteroidSize, this.asteroidSpeed, 3, this);
+    }
+
+    update() {
+        if (this.numOfAsteroids == 0) {
+            while(this.numOfAsteroids < this.startingAsteroids) {
+                this.spawnAsteroid();
+            }
+        }
     }
 }
 

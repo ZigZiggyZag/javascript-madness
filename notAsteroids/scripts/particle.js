@@ -4,6 +4,8 @@ var canvas = document.getElementById("gameCanvas");
 var ctx = canvas.getContext('2d');
 var canvasData = ctx.getImageData(0, 0, canvas.width, canvas.height,);
 
+var particleList = {};
+
 function randomInCircle(x, y, radius) {
     var randAngle = Math.random() * Math.PI * 2;
     var coords = convertToCartesian(Math.random() * radius, randAngle);
@@ -41,31 +43,6 @@ function drawImage() {
 
 }
 
-class particleList {
-    constructor() {
-        this.shiftNumber = 0;
-        this.particles = [];
-    }
-
-    shift() {
-        this.shiftNumber++;
-    }
-
-    push(element) {
-        this.particles.push(element);
-    }
-
-    getParticles(){
-        while (this.shiftNumber > 0) {
-            this.particles.shift();
-            this.shiftNumber--;
-        }
-        return this.particles;
-    }
-}
-
-var particles = new particleList();
-
 class Particle {
     constructor(x, y, lifespan, speed, color, type, size, rotation) {
         this.x = x;
@@ -81,11 +58,12 @@ class Particle {
         this.age = 0;
         this.destroyed = false;
 
-        particles.push(this);
+        this.id = generateId();
+        particleList[this.id] = this;
     }
 
     destroy() {
-        particles.shift();
+        delete particleList[this.id];
     }
 
     update() {
@@ -167,4 +145,4 @@ class ParticleController {
     // }
 }
 
-export { ParticleController, particles }
+export { ParticleController, particleList }

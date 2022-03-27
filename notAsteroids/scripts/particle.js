@@ -3,26 +3,34 @@ import { printToConsole, randBetweenValues, lerp, generateId, clamp, distanceBet
 var canvas = document.getElementById("gameCanvas");
 var ctx = canvas.getContext('2d');
 var canvasData = ctx.getImageData(0, 0, canvas.width, canvas.height,);
-var particles = {}
 
-function drawPoint(x, y, color) {
-    var index = (x + y * canvas.width) * 4;
-    canvasData.data[index + 0] = color[0];
-    canvasData.data[index + 1] = color[1];
-    canvasData.data[index + 2] = color[2];
-    canvasData.data[index + 3] = color[3];
+function randomInCircle(x, y, radius) {
+    var randAngle = Math.random() * Math.PI * 2;
+    var coords = convertToCartesian(Math.random() * radius, randAngle);
+    return [coords[0] + x, coords[1] + y]
 }
 
 function drawStar() {
 
 }
 
-function drawLine() {
-
+function drawLine(x, y, size, angle, color) {
+    ctx.strokeStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(
+        x - size * Math.cos(angle),
+        y - size * Math.sin(angle)
+    );
+    ctx.lineTo(
+        x + size * Math.cos(angle),
+        y + size * Math.sin(angle)
+    );
+    ctx.stroke();
 }
 
-function drawRectangle() {
-
+function drawSquare(x, y, size, color) {
+    ctx.strokeStyle = color;
+    ctx.strokeRect(x - size/2, y - size/2, size/2, size/2);
 }
 
 function drawArc() {
@@ -33,50 +41,130 @@ function drawImage() {
 
 }
 
+class particleList {
+    constructor() {
+        this.shiftNumber = 0;
+        this.particles = [];
+    }
+
+    shift() {
+        this.shiftNumber++;
+    }
+
+    push(element) {
+        this.particles.push(element);
+    }
+
+    getParticles(){
+        while (this.shiftNumber > 0) {
+            this.particles.shift();
+            this.shiftNumber--;
+        }
+        return this.particles;
+    }
+}
+
+var particles = new particleList();
+
 class Particle {
-    constructor(x, y, lifespan, colorArray, velocity, type, size, rotation, angularSpeed, image) {
+    constructor(x, y, lifespan, speed, color, type, size, rotation) {
         this.x = x;
         this.y = y;
-        this.size = size;
+        var velocityCartesian = convertToCartesian(speed, Math.random() * 2 * Math.PI);
+        this.xSpeed = velocityCartesian[0];
+        this.ySpeed = velocityCartesian[1];
         this.lifespan = lifespan;
-        this.rotation = rotation;
-        this.angularSpeed = angularSpeed;
-        var cartesianVelocity = vectorToCartesian(velocity);
-        this.xSpeed = cartesianVelocity[1];
-        this.ySpeed = cartesianVelocity[2];
-        this.colorArray = colorArray;
+        this.angle = rotation;
+        this.color = color;
         this.type = type;
-        this.image = image;
+        this.size = size;
+        this.age = 0;
+        this.destroyed = false;
+
+        particles.push(this);
+    }
+
+    destroy() {
+        particles.shift();
     }
 
     update() {
         this.x += this.xSpeed;
         this.y += this.ySpeed;
-        this.rotation += this.angularSpeed;
+        this.age++;
+        if (this.age >= this.lifespan) {
+            this.destroy();
+            this.destroyed = true;
+        }
     }
 
     draw() {
-        switch(type) {
-            case 0:
-                drawPoint(this.x, this.y, this.colorArray[0]);
+        if (!this.destroyed) {
+            switch(this.type) {
+                case 'line':
+                    drawLine(this.x, this.y, this.size, this.angle, this.color);
                 break;
-            default:
-                printToConsole('Attempted to draw undefined particle type');
+                case 'square':
+                    drawSquare(this.x, this.y, this.size, this.color);
+                break;
+                default:
+                    printToConsole("Unknown Particle Type");
+            }
         }
     }
 }
 
-class ParticleSpawner {
-    constructor(x, y, particle, number) {
-        this.x = x;
-        this.y = y;
-        this.particle = particle;
-        this.number = number;
+class ParticleController {
+    constructor(type, size, sizeMargin, lifespan, lifespanMargin, speed, speedMargin, color) {
+        this.type = type;
+        this.size = size;
+        this.sizeMargin = sizeMargin;
+        this.lifespan = lifespan;
+        this.lifespanMargin = lifespanMargin;
+        this.speed = speed;
+        this.speedMargin = speedMargin;
+        this.color = color;
+        this.x = 0;
+        this.y = 0;
+        this.radius = 0;
+        this.density = 0;
+        this.spawnTime = 0;
+        this.spawnTimer = 0;
     }
 
-    spawnParticle() {
-        for (let i = 0; i < this.number; i++) {
-            new Particle
+    spawnParticles(x, y, radius, number) {
+        for (let i = 0; i < number; i++) {
+            var lifespan = randBetweenValues(this.lifespan - this.lifespanMargin, this.lifespan + this.lifespanMargin);
+            var size = randBetweenValues(Math.max(this.size - this.sizeMargin, 0), this.size + this.sizeMargin);
+            var speed = randBetweenValues(this.speed - this.speedMargin, this.speed + this.speedMargin);
+            var coords = randomInCircle(x, y, radius);
+            new Particle(coords[0], coords[1], lifespan, speed, this.color, this.type, size, Math.random() * Math.PI * 2);
         }
     }
+
+    // set(x, y) {
+    //     this.x = x;
+    //     this.y = y;
+    // }
+
+    // setDensity(density) {
+    //     this.density = density;
+    //     this.spawnTime = 1/density;
+    //     this.spawnTimer = 0;
+    // }
+
+    // update() {
+    //     this.spawnTimer++;
+    //     if (this.spawnTimer >= this.spawnTime) {
+    //         this.spawnTimer = 0;
+    //         for (let i = 0; i < Math.ceil(this.density); i++) {
+    //             var lifespan = randBetweenValues(this.lifespan - this.lifespanMargin, this.lifespan + this.lifespanMargin);
+    //             var size = randBetweenValues(Math.max(this.size - this.sizeMargin, 0), this.size + this.sizeMargin);
+    //             var coords = randomInCircle(this.x, this.y, this.radius);
+    //             new Particle(coords[0], coords[1], lifespan, this.speed, 0, this.color, this.type, size, Math.random() * Math.PI * 2);
+    //         }
+    //     }
+    // }
 }
+
+export { ParticleController, particles }

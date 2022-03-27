@@ -1,5 +1,6 @@
-import {mouseX, mouseY, mouseClick, inCanvas, up, dw, lf, rt} from './input.js';
-import {objectList, Ship, AsteroidGenerator, drawCursor} from './objects.js';
+import { mouseX, mouseY, mouseClick, inCanvas, up, dw, lf, rt } from './input.js';
+import { objectList, Ship, AsteroidGenerator, drawCursor } from './objects.js';
+import { particles } from './particle.js';
 
 var canvas = document.getElementById("gameCanvas");
 var ctx = canvas.getContext('2d');
@@ -24,6 +25,16 @@ function draw(){
         if (typeof objectList[key].draw !== 'undefined') {
             objectList[key].draw();
         }
+    }
+
+    var tempPartList = particles.getParticles()
+
+    for (const particle of tempPartList) {
+        particle.update();
+    }
+
+    for (const particle of tempPartList) {
+        particle.draw();
     }
 
     drawCursor();

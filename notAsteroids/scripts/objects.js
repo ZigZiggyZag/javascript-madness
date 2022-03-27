@@ -3,10 +3,15 @@ import { ENABLE_CONSOLE_LOGGING, SHOW_BOUNDING_BOXES, SHOW_VELOCITY_VECTORS } fr
 import { engineSound, laserSound, explosion1Sound, playerDeathSound } from './assets.js'
 import { mouseX, mouseY, mouseClick, inCanvas, up, dw, lf, rt, fire1 } from './input.js';
 import { printToConsole, randBetweenValues, lerp, generateId, clamp, distanceBetweenPoints, convertToRadians, vectorToCartesian, convertToCartesian, convertToPolar, addVelocities, Vector } from "./helpers.js";
+import { ParticleController } from './particle.js';
 
 var canvas = document.getElementById("gameCanvas");
 var ctx = canvas.getContext('2d');
 const defaultFriction = 1;
+
+var playerExplosion = new ParticleController("line", 7.5, 0.5, 75, 45, 1, 0.5, 'white');
+var playerExplosion2 = new ParticleController("square", 1, 0, 100, 60, 2.5, 0.5, 'white');
+var asteroidExplosion = new ParticleController("square", 1, 0, 70, 30, 1.5, 0.5, 'white');
 
 var objectList = {};
 
@@ -179,6 +184,8 @@ class Ship extends Object {
     }
 
     destroy() {
+        playerExplosion.spawnParticles(this.x, this.y, this.size, 3);
+        playerExplosion2.spawnParticles(this.x, this.y, this.size, 6);
         this.destroyed = true;
         engineSound.pause();
         playerDeathSound.play();
@@ -322,6 +329,8 @@ class Asteroid extends Object {
     destroy() {
         explosion1Sound.rate(Math.random() + 0.5);
         explosion1Sound.play()
+
+        asteroidExplosion.spawnParticles(this.x, this.y, this.size, Math.floor(this.size / 1.5));
 
         if (this.asteroidIteration > 1) {
             new Asteroid(this.x, this.y, this.size/1.6, this.speed * 1.6, this.asteroidIteration - 1);

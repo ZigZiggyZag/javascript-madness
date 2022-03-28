@@ -66,10 +66,10 @@ class Particle {
         delete particleList[this.id];
     }
 
-    update() {
-        this.x += this.xSpeed;
-        this.y += this.ySpeed;
-        this.age++;
+    update(delta) {
+        this.x += this.xSpeed * (delta / 1000);
+        this.y += this.ySpeed * (delta / 1000);
+        this.age += delta / 1000;
         if (this.age >= this.lifespan) {
             this.destroy();
             this.destroyed = true;

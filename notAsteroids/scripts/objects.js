@@ -9,8 +9,8 @@ var canvas = document.getElementById("gameCanvas");
 var ctx = canvas.getContext('2d');
 const defaultFriction = 1;
 
-var playerExplosion = new ParticleController("line", 5, 2.5, 140, 10, 0.15, 0.05, 'white');
-var asteroidExplosion = new ParticleController("square", 1, 0, 50, 40, 1.5, 0.5, 'white');
+var playerExplosion = new ParticleController("line", 5, 3.5, 2, 0.4, 15, 5, 'white');
+var asteroidExplosion = new ParticleController("square", 1, 0, 0.5, 0.25, 100, 20, 'white');
 
 var objectList = {};
 
@@ -77,11 +77,11 @@ class Laser extends Object {
         this.deleteObject()
     }
 
-    update() {
+    update(delta) {
         var cartesianVelocity = vectorToCartesian(this.velocity);
-        this.x += cartesianVelocity[0];
-        this.y += cartesianVelocity[1];
-        this.age++;
+        this.x += cartesianVelocity[0] * (delta / 1000);
+        this.y += cartesianVelocity[1] * (delta / 1000);
+        this.age += delta / 1000;
 
         if(this.age >= this.lifeSpan) {
             if (this.parent != undefined && typeof this.parent.decreaseNumOfLasers() !== 'undefined') {
@@ -137,12 +137,12 @@ class Ship extends Object {
     constructor(x, y, angle, size, parent, name) {
         super(x, y, size, parent, name);
         this.angle = convertToRadians(angle);
-        this.acceleration = 0.1;
-        this.angularAcceleration = 0.5;
+        this.acceleration = 250;
+        this.angularAcceleration = 1750;
         this.velocity = new Vector(0, this.angle);
         this.angularVelocity = 0;
-        this.maxVelocity = 4;
-        this.maxAngularVelocity = 4;
+        this.maxVelocity = 250;
+        this.maxAngularVelocity = 250;
         this.friction = 1;
         this.reloading = false;
         this.fired = false;
@@ -173,7 +173,7 @@ class Ship extends Object {
     fire() {
         if (fire1 && !this.fired && this.numLasers < this.maxLasers) {
             var offset = convertToCartesian(20, this.angle);
-            new Laser(this.x + offset[0], this.y + offset[1], this.angle, 5, 8, 80, 'red', this);
+            new Laser(this.x + offset[0], this.y + offset[1], this.angle, 5, 400, 1, 'red', this);
             this.fired = true;
             this.numLasers++;
 
@@ -195,21 +195,21 @@ class Ship extends Object {
         this.velocity = new Vector(0, this.angle);
     }
 
-    update() {
+    update(delta) {
         if (!this.destroyed) {
             if (lf || rt) {
                 var leftRight = (rt ? 1 : 0) - (lf ? 1 : 0);
-                this.angularVelocity += leftRight * this.angularAcceleration;
+                this.angularVelocity += (leftRight * this.angularAcceleration) * (delta / 1000);
                 this.angularVelocity = clamp(this.angularVelocity, -this.maxAngularVelocity, this.maxAngularVelocity);
             }
             else {
                 this.angularVelocity = this.angularVelocity * 1/1.2;
             }
 
-            this.angle += convertToRadians(this.angularVelocity);
+            this.angle += convertToRadians(this.angularVelocity) * (delta / 1000);
 
             if (up) {
-                var accelerationVector = new Vector(this.acceleration, this.angle);
+                var accelerationVector = new Vector(this.acceleration * (delta / 1000), this.angle);
 
                 var result = addVelocities(this.velocity, accelerationVector);
                 result.setMagnitude(clamp(result.getMagnitude(), 0, this.maxVelocity))
@@ -221,14 +221,14 @@ class Ship extends Object {
                 }
             }
             else {
-                this.velocity.setMagnitude = this.velocity.getMagnitude() * 1/this.friction;
+                this.velocity.setMagnitude(this.velocity.getMagnitude() * 1/this.friction);
                 engineSound.pause();
             }
 
             var cartesianVelocity = vectorToCartesian(this.velocity);
 
-            this.x += cartesianVelocity[0]
-            this.y += cartesianVelocity[1]
+            this.x += cartesianVelocity[0] * (delta / 1000);
+            this.y += cartesianVelocity[1] * (delta / 1000);
             
             var collidingObject = this.checkCollision();
 
@@ -335,8 +335,8 @@ class Asteroid extends Object {
         asteroidExplosion.spawnParticles(this.x, this.y, this.size, Math.floor(this.size / 2));
 
         if (this.asteroidIteration > 1) {
-            new Asteroid(this.x, this.y, this.size/1.6, this.speed * 1.6, this.asteroidIteration - 1);
-            new Asteroid(this.x, this.y, this.size/1.6, this.speed * 1.6, this.asteroidIteration - 1);
+            new Asteroid(this.x, this.y, this.size/1.6, this.speed * 1.6, this.asteroidIteration - 1, this.parent);
+            new Asteroid(this.x, this.y, this.size/1.6, this.speed * 1.6, this.asteroidIteration - 1, this.parent);
         }
 
         if (this.parent != undefined && typeof this.parent.decreaseNumOfAsteroids() !== 'undefined') {
@@ -346,16 +346,16 @@ class Asteroid extends Object {
         this.deleteObject();
     }
 
-    update() {
+    update(delta) {
         var cartesianVelocity = vectorToCartesian(this.velocity);
-        this.x += cartesianVelocity[0];
-        this.y += cartesianVelocity[1];
+        this.x += cartesianVelocity[0] * (delta / 1000);
+        this.y += cartesianVelocity[1] * (delta / 1000);
 
         this.wrap();
     }
 
     draw() {
-        ctx.strokeStyle = 'white';
+        ctx.strokeStyle = 'lightgrey';
 
         ctx.beginPath();
         
@@ -405,6 +405,10 @@ class AsteroidGenerator {
 
     decreaseNumOfAsteroids() {
         this.numOfAsteroids--;
+    }
+
+    getNumOfAsteroids() {
+        return this.numOfAsteroids;
     }
 
     spawnAsteroid() {

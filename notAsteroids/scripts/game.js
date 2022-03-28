@@ -8,9 +8,21 @@ var ctx = canvas.getContext('2d');
 ctx.lineWidth = 1.2;
 
 var playerShip = new Ship(canvas.width/2, canvas.height/2, 270, 7.5);
-var generator = new AsteroidGenerator(6, 30, 1, playerShip.getId());
+var generator = new AsteroidGenerator(6, 30, 60, playerShip.getId());
 
-function draw(){
+var prev, curDelta;
+var smoothDelta = 0;
+const smoothingConstant = 0.2;
+
+function draw(timestamp){
+    if (prev === undefined) {
+        prev = timestamp;
+    }
+    
+    curDelta = timestamp - prev;
+
+    smoothDelta = (smoothDelta * smoothingConstant) + (curDelta * (1 - smoothingConstant));
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
     generator.update();
@@ -18,7 +30,7 @@ function draw(){
     // Update all object logic
     for (var key in objectList) {
         if (typeof objectList[key].update !== 'undefined') {
-            objectList[key].update();
+            objectList[key].update(smoothDelta);
         }
     }
 
@@ -30,7 +42,7 @@ function draw(){
     }
 
     for (var key in particleList) {
-        particleList[key].update();
+        particleList[key].update(smoothDelta);
     }
 
     for (var key in particleList) {
@@ -40,8 +52,10 @@ function draw(){
     drawCursor();
 
     ctx.fillStyle = 'white';
-    ctx.fillText('Number of Objects in objectList: ' + Object.keys(objectList).length, 10, 10);
+    ctx.fillText('Frametime: ' + Number.parseFloat(smoothDelta).toFixed(2), 10, 10);
+    ctx.fillText('Number of Asteroids: ' + generator.getNumOfAsteroids(), 10, 20);
 
+    prev = timestamp;
     requestAnimationFrame(draw);
 }
 

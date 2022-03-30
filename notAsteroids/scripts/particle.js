@@ -44,10 +44,10 @@ function drawImage() {
 }
 
 class Particle {
-    constructor(x, y, lifespan, speed, color, type, size, rotation) {
+    constructor(x, y, lifespan, speed, color, type, size, rotation, direction) {
         this.x = x;
         this.y = y;
-        var velocityCartesian = convertToCartesian(speed, Math.random() * 2 * Math.PI);
+        var velocityCartesian = convertToCartesian(speed, direction);
         this.xSpeed = velocityCartesian[0];
         this.ySpeed = velocityCartesian[1];
         this.lifespan = lifespan;
@@ -93,14 +93,14 @@ class Particle {
 }
 
 class ParticleController {
-    constructor(type, size, sizeMargin, lifespan, lifespanMargin, speed, speedMargin, color) {
+    constructor(type, minSize, maxSize, minLifespan, maxLifespan, minSpeed, maxSpeed, color) {
         this.type = type;
-        this.size = size;
-        this.sizeMargin = sizeMargin;
-        this.lifespan = lifespan;
-        this.lifespanMargin = lifespanMargin;
-        this.speed = speed;
-        this.speedMargin = speedMargin;
+        this.minSize = minSize;
+        this.maxSize = maxSize;
+        this.minLifespan = minLifespan;
+        this.maxLifespan = maxLifespan;
+        this.minSpeed = minSpeed;
+        this.maxSpeed = maxSpeed;
         this.color = color;
         this.x = 0;
         this.y = 0;
@@ -110,13 +110,15 @@ class ParticleController {
         this.spawnTimer = 0;
     }
 
-    spawnParticles(x, y, radius, number) {
+    spawnParticles(x, y, radius, minRotation, maxRotation, minDirection, maxDirection, number) {
         for (let i = 0; i < number; i++) {
-            var lifespan = randBetweenValues(this.lifespan - this.lifespanMargin, this.lifespan + this.lifespanMargin);
-            var size = randBetweenValues(Math.max(this.size - this.sizeMargin, 0), this.size + this.sizeMargin);
-            var speed = randBetweenValues(this.speed - this.speedMargin, this.speed + this.speedMargin);
+            var lifespan = randBetweenValues(this.minLifespan, this.maxLifespan);
+            var size = randBetweenValues(Math.max(this.minSize, 0), this.maxSize);
+            var speed = randBetweenValues(this.minSpeed, this.maxSpeed);
+            var rotation = randBetweenValues(minRotation, maxRotation);
+            var direction = randBetweenValues(minDirection, maxDirection);
             var coords = randomInCircle(x, y, radius);
-            new Particle(coords[0], coords[1], lifespan, speed, this.color, this.type, size, Math.random() * Math.PI * 2);
+            new Particle(coords[0], coords[1], lifespan, speed, this.color, this.type, size, rotation, direction);
         }
     }
 

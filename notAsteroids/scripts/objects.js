@@ -9,8 +9,9 @@ var canvas = document.getElementById("gameCanvas");
 var ctx = canvas.getContext('2d');
 const defaultFriction = 1;
 
-var playerExplosion = new ParticleController("line", 5, 3.5, 2, 0.4, 15, 5, 'white');
-var asteroidExplosion = new ParticleController("square", 1, 0, 0.5, 0.25, 100, 20, 'white');
+var playerExplosion = new ParticleController("line", 2, 8, 1.5, 2.5, 10, 20, 'white');
+var engineExhaust = new ParticleController("square", 0.8, 1.2, 0.1, 0.2, 100, 140, 'red');
+var asteroidExplosion = new ParticleController("square", 1, 1, 0.25, 0.75, 80, 120, 'white');
 
 var objectList = {};
 
@@ -183,7 +184,7 @@ class Ship extends Object {
     }
 
     destroy() {
-        playerExplosion.spawnParticles(this.x, this.y, this.size, 5);
+        playerExplosion.spawnParticles(this.x, this.y, this.size, 0, Math.PI * 2, 0, Math.PI * 2, 5);
         this.destroyed = true;
         engineSound.pause();
         playerDeathSound.play();
@@ -209,10 +210,13 @@ class Ship extends Object {
             this.angle += convertToRadians(this.angularVelocity) * (delta / 1000);
 
             if (up) {
-                var accelerationVector = new Vector(this.acceleration * (delta / 1000), this.angle);
+                let accelerationVector = new Vector(this.acceleration * (delta / 1000), this.angle);
 
-                var result = addVelocities(this.velocity, accelerationVector);
+                let result = addVelocities(this.velocity, accelerationVector);
                 result.setMagnitude(clamp(result.getMagnitude(), 0, this.maxVelocity))
+
+                let cartesian = convertToCartesian(5, this.angle + convertToRadians(180));
+                engineExhaust.spawnParticles(this.x + cartesian[0], this.y + cartesian[1], 2, 0, 0, this.angle + Math.PI, this.angle + Math.PI, 1);
 
                 this.velocity = result;
 
@@ -332,7 +336,7 @@ class Asteroid extends Object {
         explosion1Sound.rate(Math.random() + 0.5);
         explosion1Sound.play()
 
-        asteroidExplosion.spawnParticles(this.x, this.y, this.size, Math.floor(this.size / 2));
+        asteroidExplosion.spawnParticles(this.x, this.y, this.size, 0, 0, 0, Math.PI * 2, Math.floor(this.size / 2));
 
         if (this.asteroidIteration > 1) {
             new Asteroid(this.x, this.y, this.size/1.6, this.speed * 1.6, this.asteroidIteration - 1, this.parent);

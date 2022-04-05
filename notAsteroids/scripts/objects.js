@@ -532,6 +532,7 @@ class GameController {
 
         if (this.lives == 0) {
             drawText(canvas.width/2, canvas.height/2, 20, 'white', "center", "GAME OVER");
+            drawText(canvas.width/2, canvas.height/2 + 40, 5, 'white', "center", "PRESS R TO RESTART");
         }
     }
 }

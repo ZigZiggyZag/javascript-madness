@@ -1,6 +1,7 @@
 import { mouseX, mouseY, mouseClick, inCanvas, up, dw, lf, rt } from './input.js';
 import { objectList, Ship, AsteroidGenerator, drawCursor } from './objects.js';
 import { particleList } from './particle.js';
+import { drawText } from './letters.js';
 
 var canvas = document.getElementById("gameCanvas");
 var ctx = canvas.getContext('2d');

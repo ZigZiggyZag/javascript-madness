@@ -7,6 +7,7 @@ var rt = false;
 var fire1 = false;
 var fire2 = false;
 var dash = false;
+var restart = false;
 
 var mouseX = 0;
 var mouseY = 0;
@@ -25,6 +26,7 @@ function handleKeyDown(e)
     if(e.key == "s") { dw = true };
     if(e.key == "a") { lf = true };
     if(e.key == "d") { rt = true };
+    if(e.key == "r") { restart = true };
     if(e.key == " ") { fire1 = true};
 }
 
@@ -34,6 +36,7 @@ function handleKeyUp(e)
     if(e.key == "s") { dw = false };
     if(e.key == "a") { lf = false };
     if(e.key == "d") { rt = false };
+    if(e.key == "r") { restart = false };
     if(e.key == " ") { fire1 = false};
 }
 
@@ -56,4 +59,4 @@ function setMouseUp(e)
     mouseClick = false;
 }
 
-export {mouseX, mouseY, mouseClick, inCanvas, up, dw, lf, rt, fire1};
+export {mouseX, mouseY, mouseClick, inCanvas, up, dw, lf, rt, fire1, restart};

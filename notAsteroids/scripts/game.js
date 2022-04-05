@@ -1,4 +1,3 @@
-import { mouseX, mouseY, mouseClick, inCanvas, up, dw, lf, rt } from './input.js';
 import { objectList, GameController } from './objects.js';
 import { particleList } from './particle.js';
 
@@ -25,26 +24,26 @@ function draw(timestamp){
     controller.draw();
 
     // Update all object logic
-    for (var key in objectList) {
+    for (let key in objectList) {
         if (typeof objectList[key].update !== 'undefined') {
             objectList[key].update(smoothDelta);
         }
     }
 
     // Draw all objects
-    for (var key in objectList) {
+    for (let key in objectList) {
         if (typeof objectList[key].draw !== 'undefined') {
             objectList[key].draw();
         }
     }
 
     // Update all particle positions
-    for (var key in particleList) {
+    for (let key in particleList) {
         particleList[key].update(smoothDelta);
     }
 
     // Draw all particles
-    for (var key in particleList) {
+    for (let key in particleList) {
         particleList[key].draw();
     }
 

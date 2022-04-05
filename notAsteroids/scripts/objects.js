@@ -1,9 +1,9 @@
 /** @type {HTMLCanvasElement} */
 import { ENABLE_CONSOLE_LOGGING, SHOW_BOUNDING_BOXES, SHOW_VELOCITY_VECTORS } from './flags.js';
 import { engineSound, laserSound, explosion1Sound, playerDeathSound } from './assets.js'
-import { mouseX, mouseY, mouseClick, inCanvas, up, dw, lf, rt, fire1 } from './input.js';
+import { mouseX, mouseY, mouseClick, inCanvas, up, dw, lf, rt, fire1, restart } from './input.js';
 import { printToConsole, randBetweenValues, lerp, generateId, clamp, distanceBetweenPoints, convertToRadians, vectorToCartesian, convertToCartesian, convertToPolar, addVelocities, Vector } from "./helpers.js";
-import { ParticleController } from './particle.js';
+import { ParticleController, particleList } from './particle.js';
 import { drawText } from './letters.js';
 
 var canvas = document.getElementById("gameCanvas");
@@ -425,6 +425,14 @@ class AsteroidGenerator {
         this.parent.updateScore(points);
     }
 
+    setPlayerId(id) {
+        this.playerObjectId = id;
+    }
+
+    restart() {
+        this.numOfAsteroids = 0;
+    }
+
     spawnAsteroid() {
         do {
             var location = this.generatePoint();
@@ -443,7 +451,8 @@ class AsteroidGenerator {
 
 class GameController {
     constructor(lives, difficulty) {
-        this.lives = lives;
+        this.maxLives = lives
+        this.lives = this.maxLives;
         this.difficulty = difficulty;
         this.score = 0;
         this.playerShip = new Ship(canvas.width/2, canvas.height/2, 270, 7.5, this);
@@ -452,6 +461,19 @@ class GameController {
 
     update() {
         this.generator.update();
+        if (this.lives == 0 && restart) {
+            this.lives = this.maxLives;
+            this.score = 0;
+            for (let key in objectList) {
+                objectList[key].deleteObject();
+            }
+            for (let key in particleList) {
+                particleList[key].destroy();
+            }
+            this.playerShip = new Ship(canvas.width/2, canvas.height/2, 270, 7.5, this);
+            this.generator.setPlayerId(this.playerShip.getId());
+            this.generator.restart();
+        }
     }
 
     drawCursor() {

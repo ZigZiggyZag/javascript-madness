@@ -528,10 +528,10 @@ class GameController {
             lifeIconsX += this.playerShip.size * 2  ;
         }
 
-        drawText(canvas.width/2 - 85, 30, 20, 'white', ("000000" + this.score).slice(-7));
+        drawText(canvas.width/2, 30, 20, 'white', "center", ("000000" + this.score).slice(-7));
 
         if (this.lives == 0) {
-            drawText(canvas.width/2 - 110, canvas.height/2, 20, 'white', "GAME OVER");
+            drawText(canvas.width/2, canvas.height/2, 20, 'white', "center", "GAME OVER");
         }
     }
 }

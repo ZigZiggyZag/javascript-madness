@@ -1,4 +1,4 @@
-const ENABLE_CONSOLE_LOGGING = true;
+const ENABLE_CONSOLE_LOGGING = false;
 const SHOW_BOUNDING_BOXES = false;
 const SHOW_VELOCITY_VECTORS = false;
 

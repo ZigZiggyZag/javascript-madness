@@ -64,17 +64,34 @@ function drawCharacter(x, y, scale, color, letter) {
     ctx.stroke();
 }
 
-function drawText(x, y, scale, color, text) {
-    var charX = x;
+function drawText(x, y, scale, color, align, text) {
+    var charX;
+    var textLength = 0;
+    for (const char of text) {
+        if (".:".includes(char)) {
+            textLength += 0.6 * scale;
+        }
+        else {
+            textLength += 1.2 * scale;
+        }
+    }
+    switch (align) {
+        case "left":
+            charX = x;
+            break;
+        case "center":
+            charX = x - (textLength/2)
+            break;
+    }
     for (const char of text.toUpperCase()) {
         if (char != ' ') {
             drawCharacter(charX, y, scale, color, char);
         }
         if (".:".includes(char)) {
-            charX += 0.6 * scale
+            charX += 0.6 * scale;
         }
         else {
-            charX += 1.4 * scale
+            charX += 1.4 * scale;
         }
     }
 }

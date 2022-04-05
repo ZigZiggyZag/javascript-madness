@@ -1,32 +1,28 @@
 import { mouseX, mouseY, mouseClick, inCanvas, up, dw, lf, rt } from './input.js';
-import { objectList, Ship, AsteroidGenerator, drawCursor } from './objects.js';
+import { objectList, GameController } from './objects.js';
 import { particleList } from './particle.js';
-import { drawText } from './letters.js';
 
 var canvas = document.getElementById("gameCanvas");
 var ctx = canvas.getContext('2d');
 
 ctx.lineWidth = 1.2;
 
-var playerShip = new Ship(canvas.width/2, canvas.height/2, 270, 7.5);
-var generator = new AsteroidGenerator(6, 30, 60, playerShip.getId());
-
 var prev, curDelta;
 var smoothDelta = 0;
 const smoothingConstant = 0.2;
+
+var controller = new GameController(3, 5);
 
 function draw(timestamp){
     if (prev === undefined) {
         prev = timestamp;
     }
-    
     curDelta = timestamp - prev;
-
     smoothDelta = (smoothDelta * smoothingConstant) + (curDelta * (1 - smoothingConstant));
-
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    generator.update();
+
+    controller.update();
+    controller.draw();
 
     // Update all object logic
     for (var key in objectList) {
@@ -42,19 +38,15 @@ function draw(timestamp){
         }
     }
 
+    // Update all particle positions
     for (var key in particleList) {
         particleList[key].update(smoothDelta);
     }
 
+    // Draw all particles
     for (var key in particleList) {
         particleList[key].draw();
     }
-
-    drawCursor();
-
-    ctx.fillStyle = 'white';
-    ctx.fillText('Frametime: ' + Number.parseFloat(smoothDelta).toFixed(2), 10, 10);
-    ctx.fillText('Number of Asteroids: ' + generator.getNumOfAsteroids(), 10, 20);
 
     prev = timestamp;
     requestAnimationFrame(draw);

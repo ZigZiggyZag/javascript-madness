@@ -4,6 +4,7 @@ import { engineSound, laserSound, explosion1Sound, playerDeathSound } from './as
 import { mouseX, mouseY, mouseClick, inCanvas, up, dw, lf, rt, fire1 } from './input.js';
 import { printToConsole, randBetweenValues, lerp, generateId, clamp, distanceBetweenPoints, convertToRadians, vectorToCartesian, convertToCartesian, convertToPolar, addVelocities, Vector } from "./helpers.js";
 import { ParticleController } from './particle.js';
+import { drawText } from './letters.js';
 
 var canvas = document.getElementById("gameCanvas");
 var ctx = canvas.getContext('2d');
@@ -147,7 +148,6 @@ class Ship extends Object {
         this.friction = 1;
         this.reloading = false;
         this.fired = false;
-        this.lives = 3;
         this.maxLasers = 4;
         this.numLasers = 0;
         this.destroyed = false;
@@ -194,6 +194,7 @@ class Ship extends Object {
         this.angle = convertToRadians(270);
         this.angularVelocity = 0;
         this.velocity = new Vector(0, this.angle);
+        this.parent.lives--;
     }
 
     update(delta) {
@@ -245,14 +246,16 @@ class Ship extends Object {
             this.wrap();
         }
         else {
-            this.respawnTimer++;
-            if (this.respawnTimer >= this.respawnTime) {
-                var collidingObject = this.checkCollision();
-                if (objectList[collidingObject] instanceof Asteroid || objectList[collidingObject] instanceof Laser) {
-                    this.respawnTimer = 0;
-                }
-                else {
-                    this.destroyed = false;
+            if (this.parent.lives > 0) {
+                this.respawnTimer++;
+                if (this.respawnTimer >= this.respawnTime) {
+                    var collidingObject = this.checkCollision();
+                    if (objectList[collidingObject] instanceof Asteroid || objectList[collidingObject] instanceof Laser) {
+                        this.respawnTimer = 0;
+                    }
+                    else {
+                        this.destroyed = false;
+                    }
                 }
             }
         }
@@ -347,6 +350,8 @@ class Asteroid extends Object {
             this.parent.decreaseNumOfAsteroids();
         }
 
+        this.parent.updateScore(100 * this.asteroidIteration);
+
         this.deleteObject();
     }
 
@@ -391,12 +396,13 @@ class Asteroid extends Object {
 }
 
 class AsteroidGenerator {
-    constructor(startingAsteroids, asteroidSize, asteroidSpeed, playerObjectId) {
+    constructor(startingAsteroids, asteroidSize, asteroidSpeed, playerObjectId, parent) {
         this.startingAsteroids = startingAsteroids;
         this.asteroidSize = asteroidSize;
         this.asteroidSpeed = asteroidSpeed;
         this.playerObjectId = playerObjectId;
         this.numOfAsteroids = 0;
+        this.parent = parent;
     }
 
     generatePoint() {
@@ -415,6 +421,10 @@ class AsteroidGenerator {
         return this.numOfAsteroids;
     }
 
+    updateScore(points) {
+        this.parent.updateScore(points);
+    }
+
     spawnAsteroid() {
         do {
             var location = this.generatePoint();
@@ -431,26 +441,77 @@ class AsteroidGenerator {
     }
 }
 
-function drawCursor() {
-    ctx.strokeStyle = 'gray';
-    ctx.beginPath();
+class GameController {
+    constructor(lives, difficulty) {
+        this.lives = lives;
+        this.difficulty = difficulty;
+        this.score = 0;
+        this.playerShip = new Ship(canvas.width/2, canvas.height/2, 270, 7.5, this);
+        this.generator = new AsteroidGenerator(6, 30, 60, this.playerShip.getId(), this);
+    }
 
-    var angle = convertToRadians(45);
+    update() {
+        this.generator.update();
+    }
 
-    ctx.moveTo(
-        mouseX,
-        mouseY
-    );
-    ctx.lineTo(
-        mouseX + 10 * Math.cos(angle + convertToRadians(20)),
-        mouseY + 10 * Math.sin(angle + convertToRadians(20))
-    );
-    ctx.lineTo(
-        mouseX + 10 * Math.cos(angle + convertToRadians(-20)),
-        mouseY + 10 * Math.sin(angle + convertToRadians(-20))
-    );
-    ctx.closePath();
-    ctx.stroke();
+    drawCursor() {
+        ctx.strokeStyle = 'gray';
+        ctx.beginPath();
+    
+        var angle = convertToRadians(45);
+    
+        ctx.moveTo(
+            mouseX,
+            mouseY
+        );
+        ctx.lineTo(
+            mouseX + 10 * Math.cos(angle + convertToRadians(20)),
+            mouseY + 10 * Math.sin(angle + convertToRadians(20))
+        );
+        ctx.lineTo(
+            mouseX + 10 * Math.cos(angle + convertToRadians(-20)),
+            mouseY + 10 * Math.sin(angle + convertToRadians(-20))
+        );
+        ctx.closePath();
+        ctx.stroke();
+    }
+
+    updateScore(points) {
+        this.score += points;
+    }
+
+    draw() {
+        this.drawCursor();
+        var lifeIconsX = 10
+        var lifeIconsY = 10
+        var angle = convertToRadians(270);
+        for (let i = 0; i < this.lives; i++) {
+            ctx.strokeStyle = 'white';
+            ctx.beginPath();
+            ctx.moveTo(
+                lifeIconsX + this.playerShip.size * Math.cos(angle),
+                lifeIconsY + this.playerShip.size * Math.sin(angle)
+            );
+            ctx.lineTo(
+                lifeIconsX + this.playerShip.size * Math.cos(angle + convertToRadians(130)),
+                lifeIconsY + this.playerShip.size * Math.sin(angle + convertToRadians(130))
+            );
+            ctx.lineTo(
+                lifeIconsX + this.playerShip.size * Math.cos(angle + convertToRadians(-130)),
+                lifeIconsY + this.playerShip.size * Math.sin(angle + convertToRadians(-130))
+            );
+            ctx.closePath();
+            ctx.stroke();
+
+            lifeIconsX += this.playerShip.size * 2  ;
+        }
+
+        drawText(canvas.width/2 - 85, 30, 20, 'white', ("000000" + this.score).slice(-7));
+
+        if (this.lives == 0) {
+            drawText(canvas.width/2 - 110, canvas.height/2, 20, 'white', "GAME OVER");
+        }
+    }
 }
 
-export { objectList, Ship, AsteroidGenerator, drawCursor };
+export { objectList, GameController };

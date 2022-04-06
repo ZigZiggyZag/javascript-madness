@@ -2,7 +2,7 @@
 Reposity containing a few small projects using javascript
 
 Currently contains two projects, a very incomplete rpg game, and a simple asteroids clone.
-There is an associated Github Page that links to (one of) these projects.
+There is an associated [Github Page](https://zigziggyzag.github.io/javascript-madness/) that links to (one of) these projects.
 
 ## RPG Game
 Very incomplete and not reachable in the Github page.

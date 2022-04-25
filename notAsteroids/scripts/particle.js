@@ -112,12 +112,12 @@ class ParticleController {
 
     spawnParticles(x, y, radius, minRotation, maxRotation, minDirection, maxDirection, number) {
         for (let i = 0; i < number; i++) {
-            var lifespan = randBetweenValues(this.minLifespan, this.maxLifespan);
-            var size = randBetweenValues(Math.max(this.minSize, 0), this.maxSize);
-            var speed = randBetweenValues(this.minSpeed, this.maxSpeed);
-            var rotation = randBetweenValues(minRotation, maxRotation);
-            var direction = randBetweenValues(minDirection, maxDirection);
-            var coords = randomInCircle(x, y, radius);
+            let lifespan = randBetweenValues(this.minLifespan, this.maxLifespan);
+            let size = randBetweenValues(Math.max(this.minSize, 0), this.maxSize);
+            let speed = randBetweenValues(this.minSpeed, this.maxSpeed);
+            let rotation = randBetweenValues(minRotation, maxRotation);
+            let direction = randBetweenValues(minDirection, maxDirection);
+            let coords = randomInCircle(x, y, radius);
             new Particle(coords[0], coords[1], lifespan, speed, this.color, this.type, size, rotation, direction);
         }
     }
@@ -138,9 +138,9 @@ class ParticleController {
     //     if (this.spawnTimer >= this.spawnTime) {
     //         this.spawnTimer = 0;
     //         for (let i = 0; i < Math.ceil(this.density); i++) {
-    //             var lifespan = randBetweenValues(this.lifespan - this.lifespanMargin, this.lifespan + this.lifespanMargin);
-    //             var size = randBetweenValues(Math.max(this.size - this.sizeMargin, 0), this.size + this.sizeMargin);
-    //             var coords = randomInCircle(this.x, this.y, this.radius);
+    //             let lifespan = randBetweenValues(this.lifespan - this.lifespanMargin, this.lifespan + this.lifespanMargin);
+    //             let size = randBetweenValues(Math.max(this.size - this.sizeMargin, 0), this.size + this.sizeMargin);
+    //             let coords = randomInCircle(this.x, this.y, this.radius);
     //             new Particle(coords[0], coords[1], lifespan, this.speed, 0, this.color, this.type, size, Math.random() * Math.PI * 2);
     //         }
     //     }

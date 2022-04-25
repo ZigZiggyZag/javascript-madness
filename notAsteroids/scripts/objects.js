@@ -476,6 +476,10 @@ class GameController {
         }
     }
 
+    updateScore(points) {
+        this.score += points;
+    }
+
     drawCursor() {
         ctx.strokeStyle = 'gray';
         ctx.beginPath();
@@ -498,12 +502,7 @@ class GameController {
         ctx.stroke();
     }
 
-    updateScore(points) {
-        this.score += points;
-    }
-
-    draw() {
-        this.drawCursor();
+    drawLives() {
         var lifeIconsX = 10
         var lifeIconsY = 10
         var angle = convertToRadians(270);
@@ -527,6 +526,11 @@ class GameController {
 
             lifeIconsX += this.playerShip.size * 2  ;
         }
+    }
+
+    draw() {
+        this.drawCursor();
+        this.drawLives();
 
         drawText(canvas.width/2, 30, 20, 'white', "center", ("000000" + this.score).slice(-7));
 

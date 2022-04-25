@@ -50,7 +50,7 @@ function lerp(start, end, val) {
  * @param {String} id - Alphanumeric id of requested length
  */
 function generateId(length = 32) {
-    var id = (new Date()).getTime().toString(36)
+    let id = (new Date()).getTime().toString(36)
     do {
         id += (Math.floor((Math.random() * 35))).toString(36);
     } while (id.length < length);
@@ -110,10 +110,10 @@ function convertToPolar(coordinates) {
  * @returns {Vector} The sum of vector1 and vector 2
  */
 function addVelocities(vector1, vector2) {
-    var vector1Cartesian = vectorToCartesian(vector1);
-    var vector2Cartesian = vectorToCartesian(vector2);
+    let vector1Cartesian = vectorToCartesian(vector1);
+    let vector2Cartesian = vectorToCartesian(vector2);
 
-    var vectorSum = [vector1Cartesian[0] + vector2Cartesian[0], vector1Cartesian[1] + vector2Cartesian[1]];
+    let vectorSum = [vector1Cartesian[0] + vector2Cartesian[0], vector1Cartesian[1] + vector2Cartesian[1]];
 
     return convertToPolar(vectorSum);
 }

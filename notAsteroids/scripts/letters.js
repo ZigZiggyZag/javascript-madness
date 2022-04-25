@@ -42,8 +42,8 @@ var Text = {
     ":": [[-0.5, 0.5], [-0.3, 0.5], [-0.5, -0.5, 1], [-0.3, -0.5]]
 }
 
-function drawCharacter(x, y, scale, color, letter) {
-    var letter = Text[letter];
+function drawCharacter(x, y, scale, color, character) {
+    let letter = Text[character];
     ctx.strokeStyle = color;
     ctx.beginPath();
     for (const coords of letter) {
@@ -65,8 +65,8 @@ function drawCharacter(x, y, scale, color, letter) {
 }
 
 function drawText(x, y, scale, color, align, text) {
-    var charX;
-    var textLength = 0;
+    let charX;
+    let textLength = 0;
     for (const char of text) {
         if (".:".includes(char)) {
             textLength += 0.6 * scale;

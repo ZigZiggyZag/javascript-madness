@@ -42,7 +42,7 @@ function handleKeyUp(e)
 
 function getMouseXY(e)
 {
-    var rect = canvas.getBoundingClientRect();
+    let rect = canvas.getBoundingClientRect();
     mouseX = e.clientX - rect.left;
     mouseY = e.clientY - rect.top;
     inCanvas = (e.clientX > rect.left && e.clientX < rect.right) && 

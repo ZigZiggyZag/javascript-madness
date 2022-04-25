@@ -211,12 +211,12 @@ class Ship extends Object {
             this.angle += convertToRadians(this.angularVelocity) * (delta / 1000);
 
             if (up) {
-                let accelerationVector = new Vector(this.acceleration * (delta / 1000), this.angle);
+                var accelerationVector = new Vector(this.acceleration * (delta / 1000), this.angle);
 
-                let result = addVelocities(this.velocity, accelerationVector);
+                var result = addVelocities(this.velocity, accelerationVector);
                 result.setMagnitude(clamp(result.getMagnitude(), 0, this.maxVelocity))
 
-                let cartesian = convertToCartesian(5, this.angle + convertToRadians(180));
+                var cartesian = convertToCartesian(5, this.angle + convertToRadians(180));
                 engineExhaust.spawnParticles(this.x + cartesian[0], this.y + cartesian[1], 2, 0, 0, this.angle + Math.PI, this.angle + Math.PI, 1);
 
                 this.velocity = result;
